@@ -13,6 +13,17 @@ return new class extends Migration
     {
         Schema::create('movimiento_inventarios', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('inventario_id')
+                ->constrained('inventarios')
+                ->onDelete('cascade');
+
+            $table->dateTime('fecha');
+            $table->string('tipo_movimiento', 20);
+            $table->integer('cantidad');
+            $table->string('motivo', 150)->nullable();
+            $table->text('observaciones')->nullable();
+
             $table->timestamps();
         });
     }

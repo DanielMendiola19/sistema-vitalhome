@@ -13,6 +13,15 @@ return new class extends Migration
     {
         Schema::create('medicamentos', function (Blueprint $table) {
             $table->id();
+
+            $table->string('nombre', 150);
+            $table->string('principio_activo', 150)->nullable();
+            $table->string('presentacion', 100);
+            $table->string('concentracion', 100)->nullable();
+            $table->string('unidad_medida', 50)->nullable();
+            $table->text('descripcion')->nullable();
+            $table->boolean('activo')->default(true);
+
             $table->timestamps();
         });
     }

@@ -13,7 +13,22 @@ return new class extends Migration
     {
         Schema::create('inventarios', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('medicamento_id')
+                ->constrained('medicamentos')
+                ->onDelete('restrict');
+
+            $table->integer('cantidad_actual')->default(0);
+            $table->integer('cantidad_minima')->default(0);
+            $table->integer('cantidad_maxima')->nullable();
+            $table->date('fecha_vencimiento')->nullable();
+            $table->string('lote', 100)->nullable();
+            $table->string('ubicacion', 150)->nullable();
+            $table->string('estado', 30)->default('disponible');
+
             $table->timestamps();
+
+            $table->unique('medicamento_id');
         });
     }
 

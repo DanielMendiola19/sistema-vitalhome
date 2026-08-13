@@ -13,6 +13,23 @@ return new class extends Migration
     {
         Schema::create('tratamientos', function (Blueprint $table) {
             $table->id();
+
+            $table->foreignId('paciente_id')
+                ->constrained('pacientes')
+                ->onDelete('cascade');
+
+            $table->foreignId('medicamento_id')
+                ->constrained('medicamentos')
+                ->onDelete('restrict');
+
+            $table->string('dosis', 100);
+            $table->string('frecuencia', 100);
+            $table->string('via_administracion', 100)->nullable();
+            $table->date('fecha_inicio');
+            $table->date('fecha_fin')->nullable();
+            $table->text('indicaciones')->nullable();
+            $table->string('estado', 30)->default('activo');
+
             $table->timestamps();
         });
     }
