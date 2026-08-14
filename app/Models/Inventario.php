@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Inventario extends Model
 {
+    protected $table = 'inventarios';
+
     protected $fillable = [
         'medicamento_id',
         'cantidad_actual',
@@ -19,15 +22,13 @@ class Inventario extends Model
 
     protected $casts = [
         'fecha_vencimiento' => 'date',
+        'cantidad_actual' => 'integer',
+        'cantidad_minima' => 'integer',
+        'cantidad_maxima' => 'integer',
     ];
 
-    public function medicamento()
+    public function medicamento(): BelongsTo
     {
         return $this->belongsTo(Medicamento::class);
-    }
-
-    public function movimientos()
-    {
-        return $this->hasMany(MovimientoInventario::class);
     }
 }

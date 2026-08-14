@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Tratamiento extends Model
 {
+    protected $table = 'tratamientos';
+
     protected $fillable = [
         'paciente_id',
         'medicamento_id',
@@ -23,18 +26,13 @@ class Tratamiento extends Model
         'fecha_fin' => 'date',
     ];
 
-    public function paciente()
+    public function paciente(): BelongsTo
     {
-        return $this->belongsTo(Paciente::class);
+        return $this->belongsTo(Paciente::class, 'paciente_id');
     }
 
-    public function medicamento()
+    public function medicamento(): BelongsTo
     {
-        return $this->belongsTo(Medicamento::class);
-    }
-
-    public function kardex()
-    {
-        return $this->hasOne(Kardex::class);
+        return $this->belongsTo(Medicamento::class, 'medicamento_id');
     }
 }
