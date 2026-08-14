@@ -10,8 +10,19 @@
         <!-- Se añade flex-wrap y gap para que en móviles el botón baje -->
 
         <div>
+            @php
+                $hora = now()->hour;
+
+                if ($hora < 12) {
+                    $saludo = 'Buenos días';
+                } elseif ($hora < 19) {
+                    $saludo = 'Buenas tardes';
+                } else {
+                    $saludo = 'Buenas noches';
+                }
+            @endphp
             <h2 class="fw-bold text-primary-vital mb-1">
-                Buenas tardes, Daniel Mendiola
+                    {{ $saludo }}, {{ Auth::user()->nombre }} {{ Auth::user()->apellido }}
             </h2>
 
             <p class="text-secondary-vital mb-0">

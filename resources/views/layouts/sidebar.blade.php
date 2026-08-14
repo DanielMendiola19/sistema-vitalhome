@@ -143,35 +143,38 @@
         <div class="sidebar-user-info">
 
             <div class="user-avatar">
-                DM
+                {{ strtoupper(
+                    substr(Auth::user()->nombre, 0, 1) .
+                    substr(Auth::user()->apellido, 0, 1)
+                ) }}
             </div>
-
 
             <div>
 
-                <div class="sidebar-user-name">
-                    Daniel Mendiola
+                <div class="fw-semibold">
+                    {{ Auth::user()->nombre }}
+                    {{ Auth::user()->apellido }}
                 </div>
 
-                <div class="sidebar-user-role">
-                    Administrador
-                </div>
+                <small class="text-secondary-vital">
+                    {{ ucfirst(Auth::user()->rol) }}
+                </small>
 
             </div>
 
         </div>
 
+        <form action="{{ route('logout') }}" method="POST">
+            @csrf
 
-        <button
-            type="button"
-            class="logout-btn"
-        >
-
-            <i class="bi bi-box-arrow-right"></i>
-
-            Cerrar sesión
-
-        </button>
+            <button
+                type="submit"
+                class="logout-btn"
+            >
+                <i class="bi bi-box-arrow-right"></i>
+                Cerrar sesión
+            </button>
+        </form>
 
     </div>
 
