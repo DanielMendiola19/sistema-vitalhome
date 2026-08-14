@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Paciente extends Model
 {
+    protected $table = 'pacientes';
+
     protected $fillable = [
         'nombre',
         'apellido',
@@ -16,7 +19,12 @@ class Paciente extends Model
         'direccion',
         'observaciones',
     ];
-    public function tratamientos()
+
+    protected $casts = [
+        'fecha_nacimiento' => 'date',
+    ];
+
+    public function tratamientos(): HasMany
     {
         return $this->hasMany(Tratamiento::class);
     }

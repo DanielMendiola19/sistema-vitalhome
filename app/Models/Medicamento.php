@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Medicamento extends Model
 {
+    protected $table = 'medicamentos';
+
     protected $fillable = [
         'nombre',
         'principio_activo',
@@ -16,19 +19,17 @@ class Medicamento extends Model
         'activo',
     ];
 
-    public function tratamientos()
+    protected $casts = [
+        'activo' => 'boolean',
+    ];
+
+    public function tratamientos(): HasMany
     {
         return $this->hasMany(Tratamiento::class);
     }
 
-    public function kardex()
+    public function inventarios(): HasMany
     {
-        return $this->hasOne(Kardex::class);
+        return $this->hasMany(Inventario::class);
     }
-
-    public function inventario()
-    {
-        return $this->hasOne(Inventario::class);
-    }
-
 }
