@@ -4,47 +4,48 @@
 
 <div class="container-fluid">
 
-    {{-- ENCABEZADO --}}
-
     <div class="d-flex justify-content-between align-items-center flex-wrap mb-4 gap-2">
-        <!-- Se añade flex-wrap y gap para que en móviles el botón baje -->
 
         <div>
+
             @php
                 $hora = now()->hour;
 
-                if ($hora < 12) {
-                    $saludo = 'Buenos días';
-                } elseif ($hora < 19) {
-                    $saludo = 'Buenas tardes';
-                } else {
-                    $saludo = 'Buenas noches';
-                }
+                $saludo = match (true) {
+                    $hora < 12 => 'Buenos días',
+                    $hora < 19 => 'Buenas tardes',
+                    default => 'Buenas noches',
+                };
             @endphp
+
             <h2 class="fw-bold text-primary-vital mb-1">
-                    {{ $saludo }}, {{ Auth::user()->nombre }} {{ Auth::user()->apellido }}
+                {{ $saludo }},
+                {{ Auth::user()->nombre }}
+                {{ Auth::user()->apellido }}
             </h2>
 
             <p class="text-secondary-vital mb-0">
                 Resumen general del sistema
             </p>
+
         </div>
 
-        <a href="#" class="btn btn-outline-secondary">
+        <a
+            href="#"
+            class="btn btn-outline-secondary"
+        >
             <i class="bi bi-exclamation-triangle me-2"></i>
             Ver alertas
         </a>
 
     </div>
 
-
-    {{-- ESTADÍSTICAS --}}
-
     <div class="row g-3 mb-4">
 
-        {{-- PACIENTES --}}
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card stat-card stat-pacientes h-100">
+
                 <div class="card-body">
 
                     <div class="stat-content">
@@ -54,6 +55,7 @@
                         </div>
 
                         <div class="stat-info">
+
                             <span class="stat-label">
                                 Pacientes activos
                             </span>
@@ -65,18 +67,21 @@
                             <small>
                                 Registrados actualmente
                             </small>
+
                         </div>
 
                     </div>
 
                 </div>
+
             </div>
+
         </div>
 
-
-        {{-- MEDICAMENTOS --}}
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card stat-card stat-medicamentos h-100">
+
                 <div class="card-body">
 
                     <div class="stat-content">
@@ -86,6 +91,7 @@
                         </div>
 
                         <div class="stat-info">
+
                             <span class="stat-label">
                                 Medicamentos
                             </span>
@@ -97,18 +103,21 @@
                             <small>
                                 Registrados actualmente
                             </small>
+
                         </div>
 
                     </div>
 
                 </div>
+
             </div>
+
         </div>
 
-
-        {{-- REPOSICIÓN --}}
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card stat-card stat-reposicion h-100">
+
                 <div class="card-body">
 
                     <div class="stat-content">
@@ -118,6 +127,7 @@
                         </div>
 
                         <div class="stat-info">
+
                             <span class="stat-label">
                                 Por reponer
                             </span>
@@ -129,18 +139,21 @@
                             <small>
                                 Requieren atención
                             </small>
+
                         </div>
 
                     </div>
 
                 </div>
+
             </div>
+
         </div>
 
-
-        {{-- TRATAMIENTOS --}}
         <div class="col-12 col-sm-6 col-xl-3">
+
             <div class="card stat-card stat-tratamientos h-100">
+
                 <div class="card-body">
 
                     <div class="stat-content">
@@ -150,6 +163,7 @@
                         </div>
 
                         <div class="stat-info">
+
                             <span class="stat-label">
                                 Tratamientos activos
                             </span>
@@ -161,22 +175,20 @@
                             <small>
                                 En seguimiento
                             </small>
+
                         </div>
 
                     </div>
 
                 </div>
+
             </div>
+
         </div>
 
     </div>
 
-
-    {{-- CONTENIDO PRINCIPAL --}}
-
     <div class="row g-4">
-
-        {{-- INVENTARIO --}}
 
         <div class="col-lg-8">
 
@@ -187,6 +199,7 @@
                     <div class="d-flex justify-content-between align-items-center mb-3">
 
                         <div>
+
                             <h5 class="fw-bold mb-1">
                                 Medicamentos que requieren atención
                             </h5>
@@ -194,15 +207,18 @@
                             <small class="text-secondary-vital">
                                 Basado en stock actual y consumo estimado
                             </small>
+
                         </div>
 
-                        <a href="#" class="text-decoration-none"
-                           style="color:#388E3C;">
+                        <a
+                            href="#"
+                            class="text-decoration-none"
+                            style="color:#388E3C;"
+                        >
                             Ver inventario →
                         </a>
 
                     </div>
-
 
                     <div class="table-responsive">
 
@@ -244,7 +260,7 @@
 
                                         <td>
 
-                                            @if($inventario->cantidad_actual <= $inventario->cantidad_minima)
+                                            @if ($inventario->cantidad_actual <= $inventario->cantidad_minima)
 
                                                 <span
                                                     class="badge rounded-pill"
@@ -271,12 +287,14 @@
                                 @empty
 
                                     <tr>
-                                        <td colspan="5"
-                                            class="text-center text-secondary py-4">
 
+                                        <td
+                                            colspan="5"
+                                            class="text-center text-secondary py-4"
+                                        >
                                             No hay medicamentos que requieran atención.
-
                                         </td>
+
                                     </tr>
 
                                 @endforelse
@@ -292,9 +310,6 @@
             </div>
 
         </div>
-
-
-        {{-- ACTIVIDAD RECIENTE --}}
 
         <div class="col-lg-4">
 
@@ -319,6 +334,7 @@
                             </div>
 
                             <div>
+
                                 <div class="small">
                                     Sistema iniciado correctamente
                                 </div>
@@ -326,6 +342,7 @@
                                 <small class="text-secondary-vital">
                                     Ahora
                                 </small>
+
                             </div>
 
                         </div>
@@ -337,8 +354,54 @@
             </div>
 
         </div>
+
     </div>
 
 </div>
+
+<script>
+    const rememberLogin = @json(
+        session('remember_login', Auth::viaRemember())
+    );
+
+    const inactivityTimeout = rememberLogin
+        ? 8 * 60 * 1000
+        : 2 * 60 * 1000;
+
+    let inactivityTimer;
+
+    const resetInactivityTimer = () => {
+        clearTimeout(inactivityTimer);
+
+        inactivityTimer = setTimeout(
+            logoutByInactivity,
+            inactivityTimeout
+        );
+    };
+
+    const logoutByInactivity = () => {
+        fetch('{{ route('logout') }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            }
+        }).finally(() => {
+            window.location.href = '{{ route('login') }}?expired=1';
+        });
+    };
+
+    [
+        'mousemove',
+        'keydown',
+        'click',
+        'scroll',
+        'touchstart'
+    ].forEach(event => {
+        document.addEventListener(event, resetInactivityTimer);
+    });
+
+    resetInactivityTimer();
+</script>
 
 @endsection

@@ -5,23 +5,28 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PacienteController;
 
+Route::get('/', function () {
+    return auth()->check()
+        ? redirect()->route('dashboard')
+        : redirect()->route('login');
+});
 
-// LOGIN
 Route::get('/login', [AuthController::class, 'showLogin'])
     ->name('login');
 
 Route::post('/login', [AuthController::class, 'login']);
 
+Route::get('/register', [AuthController::class, 'showRegister'])
+    ->name('register');
 
-// LOGOUT
+Route::post('/register', [AuthController::class, 'register']);
+
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
-
-// DASHBOARD
-Route::get('/', [DashboardController::class, 'index'])
-    ->middleware('auth')
+Route::get('/dashboard', [DashboardController::class, 'index'])
+    ->middleware(['auth', 'inactivity'])
     ->name('dashboard');
 
 
