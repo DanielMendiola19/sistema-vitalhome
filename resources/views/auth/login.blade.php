@@ -80,36 +80,31 @@
         }
 
         .logo-container {
-            position: relative;
-            width: calc(100% + 48px);
-            margin-left: -24px;
-            margin-top: -15px;
-            margin-bottom: 5px;
+            width: 100%;
+            margin: 0 auto 20px;
             text-align: center;
             overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
         .logo-container img {
             display: block;
-            width: 120%;
-            max-width: none;
-            height: 230px;
-            margin-left: -10%;
-            object-fit: cover;
+            width: auto;
+            max-width: 85%;
+            height: 130px;
+            object-fit: contain;
             object-position: center;
+            margin: 0 auto;
         }
 
         .system-title {
-            position: absolute;
-            left: 50%;
-            bottom: 8px;
-            transform: translateX(-50%);
-            width: 100%;
-            font-size: 15px;
-            font-weight: 700;
+            margin-top: 8px;
+            font-size: 13px;
+            font-weight: 600;
             letter-spacing: 1.5px;
-            color: #333333;
-            white-space: nowrap;
+            color: #1E3A5F;
         }
 
         .title-line {
@@ -206,142 +201,208 @@
             color: #888888;
             font-size: 12px;
         }
+
+        @media (max-width: 576px) {
+            .logo-container {
+                margin-bottom: 15px;
+            }
+
+            .logo-container img {
+                max-width: 75%;
+                height: 100px;
+            }
+
+            .system-title {
+                font-size: 11px;
+                letter-spacing: 1px;
+            }
+        }
     </style>
 </head>
 
 <body>
 
-    <div class="container login-container d-flex align-items-center justify-content-center">
+<div class="container login-container d-flex align-items-center justify-content-center">
 
-        <div class="login-card">
+    <div class="login-card">
 
-            <div class="card-body p-4 p-md-5">
+        <div class="card-body p-4 p-md-5">
 
-                <div class="auth-tabs mb-3">
-                    <a href="{{ url('/login') }}" class="auth-tab active">
-                        Iniciar sesión
-                    </a>
+            <div class="auth-tabs mb-3">
 
-                    <a href="#" class="auth-tab">
-                        Registrarse
-                    </a>
+                <a
+                    href="{{ route('login') }}"
+                    class="auth-tab active"
+                >
+                    Iniciar sesión
+                </a>
+
+                <a
+                    href="{{ route('register') }}"
+                    class="auth-tab"
+                >
+                    Registrarse
+                </a>
+
+            </div>
+
+            <div class="logo-container">
+
+                <img
+                    src="{{ asset('images/logo-vitalhome.png') }}"
+                    alt="VitalHome"
+                >
+
+                <div class="system-title">
+                    SISTEMA DE GESTIÓN
                 </div>
 
-                <div class="logo-container">
+            </div>
 
-                    <img
-                        src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR7qgs_htJ00_k5Bk2aTNCDHvGRu7GycEjeQNub6UX6TTfxAZYy_00TAsU&s=10"
-                        alt="Vital Homme"
+            <div class="title-line"></div>
+
+            @if (session('session_expired'))
+
+                <div
+                    class="alert alert-warning d-flex align-items-center"
+                    role="alert"
+                >
+                    <i class="bi bi-clock-history me-2"></i>
+
+                    <span>
+                        Tu sesión se cerró automáticamente por inactividad.
+                    </span>
+                </div>
+
+            @endif
+
+            @if (session('success'))
+
+                <div
+                    class="alert alert-success"
+                    role="alert"
+                >
+                    {{ session('success') }}
+                </div>
+
+            @endif
+
+            @if ($errors->any())
+
+                <div
+                    class="alert alert-danger"
+                    role="alert"
+                >
+                    {{ $errors->first() }}
+                </div>
+
+            @endif
+
+            <form
+                method="POST"
+                action="{{ url('/login') }}"
+            >
+
+                @csrf
+
+                <div class="mb-3">
+
+                    <label
+                        for="email"
+                        class="form-label"
                     >
+                        Usuario
+                    </label>
 
-                    <div class="system-title">
-                        SISTEMA DE GESTIÓN
-                    </div>
+                    <div class="input-group">
 
-                </div>
-
-                <div class="title-line"></div>
-
-                @if (session('success'))
-                    <div class="alert alert-success" role="alert">
-                        {{ session('success') }}
-                    </div>
-                @endif
-
-                @if ($errors->any())
-                    <div class="alert alert-danger" role="alert">
-                        {{ $errors->first() }}
-                    </div>
-                @endif
-
-                <form method="POST" action="{{ url('/login') }}">
-
-                    @csrf
-
-                    <div class="mb-3">
-                        <label for="email" class="form-label">
-                            Usuario
-                        </label>
-
-                        <div class="input-group">
-
-                            <span class="input-group-text">
-                                <i class="bi bi-person"></i>
-                            </span>
-
-                            <input
-                                type="email"
-                                class="form-control"
-                                id="email"
-                                name="email"
-                                value="{{ old('email') }}"
-                                required
-                                autofocus
-                            >
-
-                        </div>
-                    </div>
-
-                    <div class="mb-3">
-
-                        <label for="password" class="form-label">
-                            Contraseña
-                        </label>
-
-                        <div class="input-group">
-
-                            <span class="input-group-text">
-                                <i class="bi bi-lock"></i>
-                            </span>
-
-                            <input
-                                type="password"
-                                class="form-control"
-                                id="password"
-                                name="password"
-                                required
-                            >
-
-                        </div>
-                    </div>
-
-                    <div class="form-check mb-4">
+                        <span class="input-group-text">
+                            <i class="bi bi-person"></i>
+                        </span>
 
                         <input
-                            class="form-check-input"
-                            type="checkbox"
-                            id="remember"
-                            name="remember"
+                            type="email"
+                            class="form-control"
+                            id="email"
+                            name="email"
+                            value="{{ old('email') }}"
+                            required
+                            autofocus
                         >
-
-                        <label class="form-check-label" for="remember">
-                            Recordarme
-                        </label>
 
                     </div>
 
-                    <div class="d-grid">
-
-                        <button
-                            type="submit"
-                            class="btn btn-login"
-                        >
-                            Ingresar
-                        </button>
-
-                    </div>
-
-                </form>
-
-                <div class="text-center mt-4 login-footer">
-                    Vital Homme © {{ date('Y') }}
                 </div>
 
+                <div class="mb-3">
+
+                    <label
+                        for="password"
+                        class="form-label"
+                    >
+                        Contraseña
+                    </label>
+
+                    <div class="input-group">
+
+                        <span class="input-group-text">
+                            <i class="bi bi-lock"></i>
+                        </span>
+
+                        <input
+                            type="password"
+                            class="form-control"
+                            id="password"
+                            name="password"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+                <div class="form-check mb-4">
+
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="remember"
+                        name="remember"
+                        value="1"
+                        {{ old('remember') ? 'checked' : '' }}
+                    >
+
+                    <label
+                        class="form-check-label"
+                        for="remember"
+                    >
+                        Recordarme
+                    </label>
+
+                </div>
+
+                <div class="d-grid">
+
+                    <button
+                        type="submit"
+                        class="btn btn-login"
+                    >
+                        Ingresar
+                    </button>
+
+                </div>
+
+            </form>
+
+            <div class="text-center mt-4 login-footer">
+                Nuestra Casa Es Tu Hogar © {{ date('Y') }}
             </div>
 
         </div>
 
     </div>
+
+</div>
 
 </body>
 
