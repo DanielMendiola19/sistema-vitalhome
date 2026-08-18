@@ -359,49 +359,4 @@
 
 </div>
 
-<script>
-    const rememberLogin = @json(
-        session('remember_login', Auth::viaRemember())
-    );
-
-    const inactivityTimeout = rememberLogin
-        ? 8 * 60 * 1000
-        : 2 * 60 * 1000;
-
-    let inactivityTimer;
-
-    const resetInactivityTimer = () => {
-        clearTimeout(inactivityTimer);
-
-        inactivityTimer = setTimeout(
-            logoutByInactivity,
-            inactivityTimeout
-        );
-    };
-
-    const logoutByInactivity = () => {
-        fetch('{{ route('logout') }}', {
-            method: 'POST',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json'
-            }
-        }).finally(() => {
-            window.location.href = '{{ route('login') }}?expired=1';
-        });
-    };
-
-    [
-        'mousemove',
-        'keydown',
-        'click',
-        'scroll',
-        'touchstart'
-    ].forEach(event => {
-        document.addEventListener(event, resetInactivityTimer);
-    });
-
-    resetInactivityTimer();
-</script>
-
 @endsection

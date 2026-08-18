@@ -35,7 +35,14 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
+        /*
+        |--------------------------------------------------------------------------
+        | Verificar estado del usuario
+        |--------------------------------------------------------------------------
+        */
+
         if ($user->estado !== 'activo') {
+
             Auth::logout();
 
             $request->session()->invalidate();
@@ -47,6 +54,12 @@ class AuthController extends Controller
                 ])
                 ->onlyInput('email');
         }
+
+        /*
+        |--------------------------------------------------------------------------
+        | Datos utilizados por el control de inactividad
+        |--------------------------------------------------------------------------
+        */
 
         $request->session()->put('remember_login', $remember);
         $request->session()->put('last_activity', now()->timestamp);
