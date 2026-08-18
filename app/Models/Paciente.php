@@ -24,8 +24,47 @@ class Paciente extends Model
         'fecha_nacimiento' => 'date',
     ];
 
+    /**
+     * Tratamientos del paciente.
+     */
     public function tratamientos(): HasMany
     {
-        return $this->hasMany(Tratamiento::class);
+        return $this->hasMany(
+            Tratamiento::class,
+            'paciente_id'
+        );
+    }
+
+    /**
+     * Observaciones clínicas del paciente.
+     */
+    public function observacionesClinicas(): HasMany
+    {
+        return $this->hasMany(
+            PatientObservation::class,
+            'paciente_id'
+        );
+    }
+
+    /**
+     * Alias de observaciones clínicas.
+     *
+     * Se mantiene para compatibilidad con las vistas
+     * y consultas existentes que utilizan "observaciones".
+     */
+    public function observaciones(): HasMany
+    {
+        return $this->observacionesClinicas();
+    }
+
+    /**
+     * Signos vitales del paciente.
+     */
+    public function signosVitales(): HasMany
+    {
+        return $this->hasMany(
+            SignoVital::class,
+            'paciente_id'
+        );
     }
 }

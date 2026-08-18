@@ -22,7 +22,7 @@
 
         <a
             href="{{ route('dashboard') }}"
-            class="nav-link active"
+            class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
         >
 
             <i class="bi bi-house"></i>
@@ -35,8 +35,8 @@
 
 
         <a
-            href="#"
-            class="nav-link"
+            href="{{ route('pacientes.index') }}"
+            class="nav-link {{ request()->routeIs('pacientes.*') ? 'active' : '' }}"
         >
 
             <i class="bi bi-people"></i>
