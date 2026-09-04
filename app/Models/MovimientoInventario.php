@@ -11,8 +11,11 @@ class MovimientoInventario extends Model
 
     protected $fillable = [
         'inventario_id',
+        'inventario_paciente_id',
+        'paciente_id',
         'fecha',
         'tipo_movimiento',
+        'grupo_movimiento',
         'cantidad',
         'motivo',
         'observaciones',
@@ -25,6 +28,25 @@ class MovimientoInventario extends Model
 
     public function inventario(): BelongsTo
     {
-        return $this->belongsTo(Inventario::class);
+        return $this->belongsTo(
+            Inventario::class,
+            'inventario_id'
+        );
+    }
+
+    public function inventarioPaciente(): BelongsTo
+    {
+        return $this->belongsTo(
+            InventarioPaciente::class,
+            'inventario_paciente_id'
+        );
+    }
+
+    public function paciente(): BelongsTo
+    {
+        return $this->belongsTo(
+            Paciente::class,
+            'paciente_id'
+        );
     }
 }

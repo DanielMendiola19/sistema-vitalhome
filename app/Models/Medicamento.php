@@ -25,11 +25,43 @@ class Medicamento extends Model
 
     public function tratamientos(): HasMany
     {
-        return $this->hasMany(Tratamiento::class);
+        return $this->hasMany(
+            Tratamiento::class
+        );
     }
 
+    /**
+     * Inventario general.
+     *
+     * Se mantiene "inventarios" por compatibilidad
+     * con el código actual del proyecto.
+     */
     public function inventarios(): HasMany
     {
-        return $this->hasMany(Inventario::class);
+        return $this->hasMany(
+            Inventario::class
+        );
+    }
+
+    /**
+     * Inventarios individuales de pacientes.
+     */
+    public function inventariosPacientes(): HasMany
+    {
+        return $this->hasMany(
+            InventarioPaciente::class,
+            'medicamento_id'
+        );
+    }
+
+    /**
+     * Historial de movimientos.
+     */
+    public function movimientosInventario(): HasMany
+    {
+        return $this->hasMany(
+            MovimientoInventario::class,
+            'medicamento_id'
+        );
     }
 }

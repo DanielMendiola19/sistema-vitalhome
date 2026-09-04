@@ -63,16 +63,14 @@
 
 
         <a
-            href="#"
-            class="nav-link"
+            href="{{ route('inventario.index') }}"
+            class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"
         >
-
             <i class="bi bi-box-seam"></i>
 
             <span>
                 Inventario
             </span>
-
         </a>
 
 

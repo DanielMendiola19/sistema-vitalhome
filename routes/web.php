@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PacienteController;
+use App\Http\Controllers\InventarioController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -64,5 +65,55 @@ Route::middleware('auth')->group(function () {
         '/pacientes/{id}/signos-vitales',
         [PacienteController::class, 'storeSignosVitales']
     )->name('pacientes.signos-vitales.store');
+});
+
+
+// INVENTARIO
+Route::middleware('auth')->group(function () {
+
+    // Inventario general
+    Route::get('/inventario', [
+        InventarioController::class,
+        'index'
+    ])->name('inventario.index');
+
+    // Inventario por paciente
+    Route::get('/inventario/pacientes', [
+        InventarioController::class,
+        'pacientes'
+    ])->name('inventario.pacientes');
+
+    // Medicamentos de un paciente
+    Route::get('/inventario/pacientes/{paciente}', [
+        InventarioController::class,
+        'paciente'
+    ])->name('inventario.paciente');
+
+    // Detalle de medicamento
+    Route::get('/inventario/detalle/{inventario}', [
+        InventarioController::class,
+        'detalle'
+    ])->name('inventario.detalle');
+
+    // Movimientos
+    Route::post('/inventario/entrada', [
+        InventarioController::class,
+        'entrada'
+    ])->name('inventario.entrada');
+
+    Route::post('/inventario/salida', [
+        InventarioController::class,
+        'salida'
+    ])->name('inventario.salida');
+
+    Route::post('/inventario/transferir', [
+        InventarioController::class,
+        'transferir'
+    ])->name('inventario.transferir');
+
+    Route::post('/inventario/paciente/{inventarioPaciente}/salida', [
+        InventarioController::class,
+        'salidaPaciente'
+    ])->name('inventario.paciente.salida');
 });
 

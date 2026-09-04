@@ -6,15 +6,15 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-class Inventario extends Model
+class InventarioPaciente extends Model
 {
-    protected $table = 'inventarios';
+    protected $table = 'inventarios_pacientes';
 
     protected $fillable = [
+        'paciente_id',
         'medicamento_id',
         'cantidad_actual',
         'cantidad_minima',
-        'cantidad_maxima',
         'fecha_vencimiento',
         'lote',
         'ubicacion',
@@ -22,15 +22,19 @@ class Inventario extends Model
     ];
 
     protected $casts = [
-        'fecha_vencimiento' => 'date',
         'cantidad_actual' => 'integer',
         'cantidad_minima' => 'integer',
-        'cantidad_maxima' => 'integer',
+        'fecha_vencimiento' => 'date',
     ];
 
-    /**
-     * Inventario general pertenece a un medicamento.
-     */
+    public function paciente(): BelongsTo
+    {
+        return $this->belongsTo(
+            Paciente::class,
+            'paciente_id'
+        );
+    }
+
     public function medicamento(): BelongsTo
     {
         return $this->belongsTo(
@@ -39,14 +43,11 @@ class Inventario extends Model
         );
     }
 
-    /**
-     * Historial de movimientos.
-     */
     public function movimientos(): HasMany
     {
         return $this->hasMany(
             MovimientoInventario::class,
-            'inventario_id'
+            'inventario_paciente_id'
         );
     }
 }
