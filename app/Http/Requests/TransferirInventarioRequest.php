@@ -35,11 +35,6 @@ class TransferirInventarioRequest extends FormRequest
                 'string',
                 'max:150',
             ],
-
-            'observaciones' => [
-                'nullable',
-                'string',
-            ],
         ];
     }
 }

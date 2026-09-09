@@ -8,7 +8,7 @@ class RegistrarSalidaInventarioRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules(): array
@@ -29,11 +29,6 @@ class RegistrarSalidaInventarioRequest extends FormRequest
                 'nullable',
                 'string',
                 'max:150',
-            ],
-
-            'observaciones' => [
-                'nullable',
-                'string',
             ],
         ];
     }

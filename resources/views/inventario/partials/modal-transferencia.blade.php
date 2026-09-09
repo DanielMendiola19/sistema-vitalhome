@@ -4,7 +4,6 @@
     tabindex="-1"
     aria-hidden="true"
 >
-
     <div class="modal-dialog modal-dialog-centered">
 
         <div class="modal-content border-0 rounded-4 shadow">
@@ -20,6 +19,7 @@
                     type="hidden"
                     name="inventario_id"
                     id="transferencia_inventario_id"
+                    value="{{ $detalle?->id ?? '' }}"
                 >
 
                 <div class="modal-header border-0">
@@ -49,7 +49,6 @@
 
                 </div>
 
-
                 <div class="modal-body">
 
                     <div class="mb-3">
@@ -71,10 +70,8 @@
                             @foreach($pacientes as $paciente)
 
                                 <option value="{{ $paciente->id }}">
-
                                     {{ $paciente->nombre }}
                                     {{ $paciente->apellido }}
-
                                 </option>
 
                             @endforeach
@@ -82,7 +79,6 @@
                         </select>
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -100,8 +96,7 @@
 
                     </div>
 
-
-                    <div class="mb-3">
+                    <div>
 
                         <label class="form-label fw-semibold">
                             Motivo
@@ -117,23 +112,7 @@
 
                     </div>
 
-
-                    <div>
-
-                        <label class="form-label fw-semibold">
-                            Observaciones
-                        </label>
-
-                        <textarea
-                            name="observaciones"
-                            class="form-control"
-                            rows="3"
-                        ></textarea>
-
-                    </div>
-
                 </div>
-
 
                 <div class="modal-footer border-0">
 
@@ -160,5 +139,4 @@
         </div>
 
     </div>
-
 </div>

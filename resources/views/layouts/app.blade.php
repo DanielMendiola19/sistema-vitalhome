@@ -1,46 +1,51 @@
 <!DOCTYPE html>
+
 <html lang="es">
 
 <head>
 
-    <meta charset="UTF-8">
+<meta charset="UTF-8">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
+<meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+>
 
-    <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
-    >
+<meta
+    name="csrf-token"
+    content="{{ csrf_token() }}"
+>
 
-    <title>
-        @yield('title', 'VITALHOME | Sistema de Gestión')
-    </title>
+<title>
+    @yield('title', 'VITALHOME | Sistema de Gestión')
+</title>
 
-    {{-- Bootstrap Icons --}}
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    >
+{{-- Bootstrap Icons --}}
+<link
+    rel="stylesheet"
+    href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+>
 
-    {{-- CSS y JS de Vite --}}
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+{{-- CSS y JS de Vite --}}
+@vite([
+    'resources/css/app.css',
+    'resources/js/app.js'
+])
+
 
 </head>
 
-
 <body>
+
+@if (Auth::check())
+
+{{-- =====================================================
+     ESTRUCTURA PARA USUARIOS AUTENTICADOS
+     ===================================================== --}}
 
 <div class="app-container">
 
-    {{-- =====================================================
-         SIDEBAR DESKTOP
-         ===================================================== --}}
+    {{-- SIDEBAR DESKTOP --}}
 
     <div class="desktop-sidebar">
 
@@ -49,9 +54,7 @@
     </div>
 
 
-    {{-- =====================================================
-         CONTENIDO PRINCIPAL
-         ===================================================== --}}
+    {{-- CONTENIDO PRINCIPAL --}}
 
     <main class="main-content">
 
@@ -84,9 +87,9 @@
 </div>
 
 
-{{-- =========================================================
+{{-- =====================================================
      SIDEBAR MÓVIL
-     ========================================================= --}}
+     ===================================================== --}}
 
 <div
     class="offcanvas offcanvas-start"
@@ -123,6 +126,20 @@
 
 </div>
 
+
+@else
+
+
+{{-- =====================================================
+     ESTRUCTURA PARA PÁGINAS PÚBLICAS
+     ===================================================== --}}
+
+@yield('content')
+
+
+@endif
+
+@yield('scripts')
 
 </body>
 

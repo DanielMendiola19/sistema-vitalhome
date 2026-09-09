@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class RegistrarEntradaInventarioRequest extends FormRequest
+class RegistrarInventarioPacienteRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,6 +14,11 @@ class RegistrarEntradaInventarioRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'paciente_id' => [
+                'required',
+                'exists:pacientes,id',
+            ],
+
             'medicamento_id' => [
                 'required',
                 'exists:medicamentos,id',
@@ -25,21 +30,21 @@ class RegistrarEntradaInventarioRequest extends FormRequest
                 'min:1',
             ],
 
-            'motivo' => [
+            'cantidad_minima' => [
                 'nullable',
-                'string',
-                'max:150',
+                'integer',
+                'min:0',
+            ],
+
+            'fecha_vencimiento' => [
+                'nullable',
+                'date',
             ],
 
             'lote' => [
                 'nullable',
                 'string',
                 'max:100',
-            ],
-
-            'fecha_vencimiento' => [
-                'nullable',
-                'date',
             ],
         ];
     }

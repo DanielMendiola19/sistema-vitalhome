@@ -10,7 +10,7 @@ class UserSeeder extends Seeder
 {
     public function run(): void
     {
-        User::updateOrCreate(
+        $admin = User::withTrashed()->updateOrCreate(
             ['email' => 'admin@vitalhome.com'],
             [
                 'nombre' => 'Administrador',
@@ -18,18 +18,28 @@ class UserSeeder extends Seeder
                 'password' => Hash::make('Admin12345'),
                 'rol' => 'administrador',
                 'estado' => 'activo',
+                'debe_cambiar_password' => false,
             ]
         );
 
-        User::updateOrCreate(
+        if ($admin->trashed()) {
+            $admin->restore();
+        }
+
+        $enfermero = User::withTrashed()->updateOrCreate(
             ['email' => 'enfermeria@vitalhome.com'],
             [
                 'nombre' => 'Enfermería',
                 'apellido' => 'Vital Home',
                 'password' => Hash::make('Enfermeria12345'),
-                'rol' => 'enfermeria',
+                'rol' => 'enfermero',
                 'estado' => 'activo',
+                'debe_cambiar_password' => false,
             ]
         );
+
+        if ($enfermero->trashed()) {
+            $enfermero->restore();
+        }
     }
 }

@@ -6,6 +6,8 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PacienteController;
 use App\Http\Controllers\InventarioController;
+use App\Http\Controllers\UsuarioController;
+use App\Http\Controllers\MedicamentoController;
 
 Route::get('/', function () {
     return Auth::check()
@@ -18,25 +20,114 @@ Route::get('/login', [AuthController::class, 'showLogin'])
 
 Route::post('/login', [AuthController::class, 'login']);
 
-Route::get('/register', [AuthController::class, 'showRegister'])
-    ->name('register');
+Route::get('/recuperar-password', [
+    AuthController::class,
+    'showForgotPassword'
+])->name('password.forgot');
 
-Route::post('/register', [AuthController::class, 'register']);
+Route::post('/recuperar-password', [
+    AuthController::class,
+    'forgotPassword'
+])->name('password.email');
 
 Route::post('/logout', [AuthController::class, 'logout'])
     ->middleware('auth')
     ->name('logout');
 
+
+// ======================================================
+// CAMBIO OBLIGATORIO DE CONTRASEÑA
+// ======================================================
+
+Route::middleware(['auth', 'inactivity', 'must.change.password'])->group(function () {
+
+    Route::get('/cambiar-password', [
+        AuthController::class,
+        'showChangePassword'
+    ])->name('password.change');
+
+    Route::post('/cambiar-password', [
+        AuthController::class,
+        'changePassword'
+    ])->name('password.update');
+
+
+});
+
+
+
 Route::get('/dashboard', [DashboardController::class, 'index'])
-    ->middleware(['auth', 'inactivity'])
+    ->middleware(['auth', 'inactivity', 'must.change.password'])
     ->name('dashboard');
+
+
+// ======================================================
+// USUARIOS - SOLO ADMINISTRADOR
+// ======================================================
+Route::middleware(['auth', 'inactivity', 'admin'])->group(function () {
+
+    // Listado de usuarios
+    Route::get('/usuarios', [
+        UsuarioController::class,
+        'index'
+    ])->name('usuarios.index');
+
+    // Formulario para registrar usuario
+    Route::get('/usuarios/crear', [
+        UsuarioController::class,
+        'create'
+    ])->name('usuarios.create');
+
+    // Guardar nuevo usuario
+    Route::post('/usuarios', [
+        UsuarioController::class,
+        'store'
+    ])->name('usuarios.store');
+
+    // Formulario para editar usuario
+    Route::get('/usuarios/{id}/editar', [
+        UsuarioController::class,
+        'edit'
+    ])->name('usuarios.edit');
+
+    // Actualizar usuario
+    Route::put('/usuarios/{id}', [
+        UsuarioController::class,
+        'update'
+    ])->name('usuarios.update');
+
+
+    Route::patch('/usuarios/{id}/estado', [
+        UsuarioController::class,
+        'cambiarEstado'
+    ])->name('usuarios.estado');
+
+    // Eliminación lógica
+    Route::delete('/usuarios/{id}', [
+        UsuarioController::class,
+        'destroy'
+    ])->name('usuarios.destroy');
+
+
+    Route::get('/usuarios/papelera', [
+        UsuarioController::class,
+        'papelera'
+    ])->name('usuarios.papelera');
+
+    Route::patch('/usuarios/{id}/restaurar', [
+        UsuarioController::class,
+        'restaurar'
+    ])->name('usuarios.restaurar');
+
+});
+
 
 
 // ======================================================
 // PACIENTES
 // ======================================================
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'inactivity', 'must.change.password'])->group(function () {
 
     // Listado
     Route::get('/pacientes', [PacienteController::class, 'index'])
@@ -69,7 +160,7 @@ Route::middleware('auth')->group(function () {
 
 
 // INVENTARIO
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'inactivity', 'must.change.password'])->group(function () {
 
     // Inventario general
     Route::get('/inventario', [
@@ -115,5 +206,41 @@ Route::middleware('auth')->group(function () {
         InventarioController::class,
         'salidaPaciente'
     ])->name('inventario.paciente.salida');
-});
 
+
+
+    Route::post('/inventario/paciente/registrar', [
+        InventarioController::class,
+        'registrarInventarioPaciente'
+    ])->name('inventario.paciente.registrar');
+
+
+    // ======================================================
+    // MEDICAMENTOS
+    // ======================================================
+
+    Route::get('/medicamentos', [
+        MedicamentoController::class,
+        'index'
+    ])->name('medicamentos.index');
+
+    Route::get('/medicamentos/crear', [
+        MedicamentoController::class,
+        'create'
+    ])->name('medicamentos.create');
+
+    Route::post('/medicamentos', [
+        MedicamentoController::class,
+        'store'
+    ])->name('medicamentos.store');
+
+    Route::get('/medicamentos/{medicamento}/editar', [
+        MedicamentoController::class,
+        'edit'
+    ])->name('medicamentos.edit');
+
+    Route::put('/medicamentos/{medicamento}', [
+        MedicamentoController::class,
+        'update'
+    ])->name('medicamentos.update');
+});

@@ -137,16 +137,6 @@
 
         <div class="list-group-item px-0 d-flex justify-content-between">
             <span class="text-muted">
-                Ubicación
-            </span>
-
-            <strong>
-                {{ $detalle->ubicacion ?: '—' }}
-            </strong>
-        </div>
-
-        <div class="list-group-item px-0 d-flex justify-content-between">
-            <span class="text-muted">
                 Tipo
             </span>
 

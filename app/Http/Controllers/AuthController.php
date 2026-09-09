@@ -6,12 +6,56 @@ use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use App\Mail\RecuperacionPassword;
+use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
     public function showLogin()
     {
         return view('auth.login');
+    }
+
+    public function showForgotPassword()
+    {
+        return view('auth.forgot-password');
+    }
+
+    public function forgotPassword(Request $request)
+    {
+        $validated = $request->validate([
+            'email' => [
+                'required',
+                'email',
+            ],
+        ]);
+
+        $user = User::where('email', $validated['email'])->first();
+
+        if ($user) {
+
+            $passwordTemporal = Str::random(12);
+
+            $user->password = $passwordTemporal;
+            $user->debe_cambiar_password = true;
+            $user->save();
+
+            Mail::to($user->email)
+                ->send(
+                    new RecuperacionPassword(
+                        $user->nombre,
+                        $passwordTemporal
+                    )
+                );
+        }
+
+        return redirect()
+            ->route('login')
+            ->with(
+                'success',
+                'Si el correo está registrado, recibirás una contraseña temporal para recuperar tu acceso.'
+            );
     }
 
     public function login(Request $request)
@@ -35,14 +79,7 @@ class AuthController extends Controller
 
         $user = Auth::user();
 
-        /*
-        |--------------------------------------------------------------------------
-        | Verificar estado del usuario
-        |--------------------------------------------------------------------------
-        */
-
         if ($user->estado !== 'activo') {
-
             Auth::logout();
 
             $request->session()->invalidate();
@@ -55,60 +92,14 @@ class AuthController extends Controller
                 ->onlyInput('email');
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Datos utilizados por el control de inactividad
-        |--------------------------------------------------------------------------
-        */
-
         $request->session()->put('remember_login', $remember);
         $request->session()->put('last_activity', now()->timestamp);
 
+        if ($user->debe_cambiar_password) {
+            return redirect()->route('password.change');
+        }
+
         return redirect()->route('dashboard');
-    }
-
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'apellido' => ['required', 'string', 'max:100'],
-            'rol' => [
-                'required',
-                'in:administrador,enfermero,medico,personal,usuario',
-            ],
-            'email' => [
-                'required',
-                'email',
-                'max:255',
-                'unique:users,email',
-            ],
-            'password' => [
-                'required',
-                'min:8',
-                'confirmed',
-            ],
-        ]);
-
-        User::create([
-            'nombre' => $validated['nombre'],
-            'apellido' => $validated['apellido'],
-            'rol' => $validated['rol'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-            'estado' => 'activo',
-        ]);
-
-        return redirect()
-            ->route('login')
-            ->with(
-                'success',
-                'Cuenta creada correctamente. Ahora puedes iniciar sesión.'
-            );
     }
 
     public function logout(Request $request)
@@ -131,5 +122,64 @@ class AuthController extends Controller
         return redirect()
             ->route('login')
             ->with('session_expired', true);
+    }
+
+
+    public function showChangePassword()
+    {
+        $user = Auth::user();
+
+        if (!$user->debe_cambiar_password) {
+            return redirect()
+                ->route('dashboard');
+        }
+
+        return view('auth.change-password');
+    }
+
+    public function changePassword(Request $request)
+    {
+        $validated = $request->validate([
+            'password' => [
+                'required',
+                'string',
+                'min:8',
+                'confirmed',
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[\d\W]/',
+            ],
+        ], [
+            'password.required' => 'La nueva contraseña es obligatoria.',
+            'password.min' => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.regex' => 'La contraseña debe contener mayúsculas, minúsculas y al menos un número o carácter especial.',
+        ]);
+
+        $user = Auth::user();
+
+        $user->password = $validated['password'];
+        $user->debe_cambiar_password = false;
+        $user->save();
+
+        // Regenerar la sesión después del cambio de contraseña
+        $request->session()->regenerate();
+
+        $request->session()->put(
+            'remember_login',
+            $request->session()->get('remember_login', false)
+        );
+
+        $request->session()->put(
+            'last_activity',
+            now()->timestamp
+        );
+
+        return redirect()
+            ->route('dashboard')
+            ->with(
+                'success',
+                'Tu contraseña fue actualizada correctamente.'
+            );
     }
 }

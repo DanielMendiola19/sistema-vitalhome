@@ -35,16 +35,6 @@
                 Registrar entrada
             </button>
 
-            <button
-                type="button"
-                class="btn btn-outline-secondary"
-                data-bs-toggle="modal"
-                data-bs-target="#modalSalida"
-            >
-                <i class="bi bi-box-arrow-up me-1"></i>
-                Registrar salida
-            </button>
-
         </div>
 
     </div>
@@ -508,26 +498,26 @@ document.addEventListener(
                 'show.bs.modal',
                 function (event) {
 
-                    const button =
-                        event.relatedTarget;
-
-                    if (!button) {
-                        return;
-                    }
-
-                    const inventarioId =
-                        button.getAttribute(
-                            'data-inventario-id'
-                        );
+                    const button = event.relatedTarget;
 
                     const input =
                         document.getElementById(
                             'salida_inventario_id'
                         );
 
-                    if (input) {
-                        input.value = inventarioId || '';
+                    if (!input) {
+                        return;
                     }
+
+                    if (!button) {
+                        input.value = '';
+                        return;
+                    }
+
+                    const inventarioId =
+                        button.dataset.inventarioId;
+
+                    input.value = inventarioId || '';
 
                 }
             );

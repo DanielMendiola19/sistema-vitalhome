@@ -47,6 +47,22 @@
 
         </a>
 
+        @if (Auth::user()->rol === 'administrador')
+
+         <a
+                href="{{ route('medicamentos.index') }}"
+                class="nav-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}"
+            >
+
+                <i class="bi bi-capsule"></i>
+
+                <span>
+                    Medicamentos
+                </span>
+
+            </a>
+        @endif
+
 
         <a
             href="#"
@@ -102,32 +118,62 @@
         </a>
 
 
-        <a
-            href="#"
-            class="nav-link"
-        >
+        @if (Auth::user()->rol === 'administrador')
 
-            <i class="bi bi-bar-chart"></i>
+            {{-- =====================================================
+                REPORTES
+                ===================================================== --}}
 
-            <span>
-                Reportes
-            </span>
+            <a
+                href="#"
+                class="nav-link"
+            >
 
-        </a>
+                <i class="bi bi-bar-chart"></i>
+
+                <span>
+                    Reportes
+                </span>
+
+            </a>
 
 
-        <a
-            href="#"
-            class="nav-link"
-        >
+            {{-- =====================================================
+                USUARIOS
+                ===================================================== --}}
 
-            <i class="bi bi-gear"></i>
+            <a
+                href="{{ route('usuarios.index') }}"
+                class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"
+            >
 
-            <span>
-                Configuración
-            </span>
+                <i class="bi bi-person-gear"></i>
 
-        </a>
+                <span>
+                    Usuarios
+                </span>
+
+            </a>
+
+
+            {{-- =====================================================
+                CONFIGURACIÓN
+                ===================================================== --}}
+
+            <a
+                href="#"
+                class="nav-link"
+            >
+
+                <i class="bi bi-gear"></i>
+
+                <span>
+                    Configuración
+                </span>
+
+            </a>
+
+        @endif
 
     </nav>
 

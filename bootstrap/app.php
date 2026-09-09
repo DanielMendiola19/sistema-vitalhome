@@ -4,6 +4,8 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use App\Http\Middleware\CheckInactivity;
+use App\Http\Middleware\AdminMiddleware;
+use App\Http\Middleware\MustChangePassword;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -14,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'inactivity' => CheckInactivity::class,
+            'admin' => AdminMiddleware::class,
+            'must.change.password' => MustChangePassword::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

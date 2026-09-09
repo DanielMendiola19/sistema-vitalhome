@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\RegistrarEntradaInventarioRequest;
 use App\Http\Requests\RegistrarSalidaInventarioRequest;
 use App\Http\Requests\TransferirInventarioRequest;
+use App\Http\Requests\RegistrarInventarioPacienteRequest;
 use App\Models\Inventario;
 use App\Models\InventarioPaciente;
 use App\Models\Medicamento;
@@ -226,6 +227,16 @@ class InventarioController extends Controller
                     ->with('medicamento')
                     ->orderBy('id');
             },
+
+            'movimientosInventario' => function ($query) {
+                $query
+                    ->whereNotNull('inventario_paciente_id')
+                    ->with([
+                        'inventarioPaciente.medicamento',
+                    ])
+                    ->latest('fecha');
+            },
+
             'tratamientos.medicamento',
         ]);
 
@@ -244,6 +255,42 @@ class InventarioController extends Controller
                 'detalle'
             )
         );
+    }
+
+
+    public function registrarInventarioPaciente(
+        RegistrarInventarioPacienteRequest $request
+    ): RedirectResponse {
+        try {
+            $paciente = Paciente::findOrFail(
+                $request->integer('paciente_id')
+            );
+
+            $medicamento = Medicamento::query()
+                ->whereKey($request->integer('medicamento_id'))
+                ->where('activo', true)
+                ->firstOrFail();
+
+            $this->inventarioService->registrarInventarioPaciente(
+                paciente: $paciente,
+                medicamento: $medicamento,
+                cantidad: $request->integer('cantidad'),
+                cantidadMinima: $request->integer('cantidad_minima', 0),
+                fechaVencimiento: $request->input('fecha_vencimiento'),
+                lote: $request->input('lote')
+            );
+
+            return back()->with(
+                'success',
+                'Medicamento registrado correctamente en el inventario del paciente.'
+            );
+        } catch (Throwable $e) {
+            report($e);
+
+            return back()
+                ->withInput()
+                ->with('error', $e->getMessage());
+        }
     }
 
     /**
@@ -282,21 +329,17 @@ class InventarioController extends Controller
         RegistrarEntradaInventarioRequest $request
     ): RedirectResponse {
         try {
-            $medicamento = Medicamento::findOrFail(
-                $request->integer('medicamento_id')
-            );
+            $medicamento = Medicamento::query()
+                ->whereKey($request->integer('medicamento_id'))
+                ->where('activo', true)
+                ->firstOrFail();
 
             $this->inventarioService->registrarEntrada(
                 medicamento: $medicamento,
                 cantidad: $request->integer('cantidad'),
                 motivo: $request->input('motivo'),
-                observaciones: $request->input(
-                    'observaciones'
-                ),
                 lote: $request->input('lote'),
-                fechaVencimiento: $request->input(
-                    'fecha_vencimiento'
-                )
+                fechaVencimiento: $request->input('fecha_vencimiento')
             );
 
             return back()->with(
@@ -308,10 +351,7 @@ class InventarioController extends Controller
 
             return back()
                 ->withInput()
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
+                ->with('error', $e->getMessage());
         }
     }
 
@@ -329,10 +369,7 @@ class InventarioController extends Controller
             $this->inventarioService->registrarSalidaGeneral(
                 inventario: $inventario,
                 cantidad: $request->integer('cantidad'),
-                motivo: $request->input('motivo'),
-                observaciones: $request->input(
-                    'observaciones'
-                )
+                motivo: $request->input('motivo')
             );
 
             return back()->with(
@@ -344,12 +381,10 @@ class InventarioController extends Controller
 
             return back()
                 ->withInput()
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
+                ->with('error', $e->getMessage());
         }
     }
+
 
     /**
      * Transferir medicamento al inventario individual
@@ -371,10 +406,7 @@ class InventarioController extends Controller
                 inventarioGeneral: $inventario,
                 paciente: $paciente,
                 cantidad: $request->integer('cantidad'),
-                motivo: $request->input('motivo'),
-                observaciones: $request->input(
-                    'observaciones'
-                )
+                motivo: $request->input('motivo')
             );
 
             return back()->with(
@@ -412,36 +444,26 @@ class InventarioController extends Controller
                 'string',
                 'max:150',
             ],
-
-            'observaciones' => [
-                'nullable',
-                'string',
-            ],
         ]);
 
         try {
             $this->inventarioService->registrarSalidaPaciente(
                 inventarioPaciente: $inventarioPaciente,
                 cantidad: $request->integer('cantidad'),
-                motivo: $request->input('motivo'),
-                observaciones: $request->input(
-                    'observaciones'
-                )
+                motivo: $request->input('motivo')
             );
 
             return back()->with(
                 'success',
                 'Salida registrada correctamente.'
             );
+
         } catch (Throwable $e) {
             report($e);
 
             return back()
                 ->withInput()
-                ->with(
-                    'error',
-                    $e->getMessage()
-                );
+                ->with('error', $e->getMessage());
         }
     }
 }

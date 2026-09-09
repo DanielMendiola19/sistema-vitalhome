@@ -48,37 +48,6 @@
             border-radius: 0 0 10px 10px;
         }
 
-        .auth-tabs {
-            display: flex;
-            gap: 5px;
-            padding: 5px;
-            background-color: #2424BD;
-            border-radius: 12px;
-        }
-
-        .auth-tab {
-            flex: 1;
-            padding: 9px 12px;
-            text-align: center;
-            text-decoration: none;
-            font-size: 14px;
-            font-weight: 600;
-            color: #ffffff;
-            border-radius: 9px;
-            transition: 0.2s ease;
-        }
-
-        .auth-tab:hover {
-            color: #ffffff;
-            background-color: rgba(255, 255, 255, 0.12);
-        }
-
-        .auth-tab.active {
-            background-color: #ffffff;
-            color: #2424BD;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.12);
-        }
-
         .logo-container {
             width: 100%;
             margin: 0 auto 20px;
@@ -228,24 +197,6 @@
 
         <div class="card-body p-4 p-md-5">
 
-            <div class="auth-tabs mb-3">
-
-                <a
-                    href="{{ route('login') }}"
-                    class="auth-tab active"
-                >
-                    Iniciar sesión
-                </a>
-
-                <a
-                    href="{{ route('register') }}"
-                    class="auth-tab"
-                >
-                    Registrarse
-                </a>
-
-            </div>
-
             <div class="logo-container">
 
                 <img
@@ -355,29 +306,67 @@
                             id="password"
                             name="password"
                             required
+                            autocomplete="current-password"
                         >
+
+                        <button
+                            type="button"
+                            class="btn btn-outline-secondary password-toggle"
+                            onclick="toggleLoginPassword()"
+                            aria-label="Mostrar contraseña"
+                            style="
+                                border: 1px solid #bdbdbd;
+                                border-left: none;
+                                background-color: #ffffff;
+                                color: #6b7785;
+                            "
+                        >
+                            <i class="bi bi-eye" id="passwordToggleIcon"></i>
+                        </button>
 
                     </div>
 
                 </div>
 
-                <div class="form-check mb-4">
+                <div
+                    style="
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        margin-bottom: 20px;
+                    "
+                >
 
-                    <input
-                        class="form-check-input"
-                        type="checkbox"
-                        id="remember"
-                        name="remember"
-                        value="1"
-                        {{ old('remember') ? 'checked' : '' }}
-                    >
+                    <div class="form-check">
 
-                    <label
-                        class="form-check-label"
-                        for="remember"
+                        <input
+                            class="form-check-input"
+                            type="checkbox"
+                            name="remember"
+                            id="remember"
+                        >
+
+                        <label
+                            class="form-check-label"
+                            for="remember"
+                        >
+                            Recordarme
+                        </label>
+
+                    </div>
+
+
+                    <a
+                        href="{{ route('password.forgot') }}"
+                        style="
+                            color: var(--vh-blue);
+                            font-size: 13px;
+                            font-weight: 600;
+                            text-decoration: none;
+                        "
                     >
-                        Recordarme
-                    </label>
+                        ¿Olvidaste tu contraseña?
+                    </a>
 
                 </div>
 
@@ -403,6 +392,33 @@
     </div>
 
 </div>
+
+<script>
+
+function toggleLoginPassword() {
+
+    const passwordInput = document.getElementById('password');
+    const passwordIcon = document.getElementById('passwordToggleIcon');
+
+    if (passwordInput.type === 'password') {
+
+        passwordInput.type = 'text';
+
+        passwordIcon.classList.remove('bi-eye');
+        passwordIcon.classList.add('bi-eye-slash');
+
+    } else {
+
+        passwordInput.type = 'password';
+
+        passwordIcon.classList.remove('bi-eye-slash');
+        passwordIcon.classList.add('bi-eye');
+
+    }
+
+}
+
+</script>
 
 </body>
 

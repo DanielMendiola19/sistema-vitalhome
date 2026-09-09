@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('apellido', 100);
             $table->string('email', 150)->unique();
             $table->string('password');
-            $table->string('rol', 50)->default('enfermeria');
+            $table->string('rol', 50)->default('enfermero');
             $table->string('estado', 20)->default('activo');
             $table->timestamps();
         });
