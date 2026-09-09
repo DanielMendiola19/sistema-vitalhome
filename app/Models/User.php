@@ -5,8 +5,10 @@ namespace App\Models;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use App\Models\MovimientoInventario;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+
 
 class User extends Authenticatable
 {
@@ -33,5 +35,12 @@ class User extends Authenticatable
             'password' => 'hashed',
             'debe_cambiar_password' => 'boolean',
         ];
+    }
+    public function movimientosInventario()
+    {
+        return $this->hasMany(
+            MovimientoInventario::class,
+            'usuario_id'
+        );
     }
 }

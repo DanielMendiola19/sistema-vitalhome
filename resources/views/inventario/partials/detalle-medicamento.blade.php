@@ -175,6 +175,16 @@
             Registrar salida
         </button>
 
+        <button
+            type="button"
+            class="btn btn-outline-primary"
+            data-bs-toggle="modal"
+            data-bs-target="#modalConfigurarInventario"
+        >
+            <i class="bi bi-gear me-2"></i>
+            Configurar inventario
+        </button>
+
     </div>
 
 
@@ -229,5 +239,212 @@
 
     @endforelse
 
+
+    {{-- MODAL CONFIGURAR INVENTARIO --}}
+
+    <div
+        class="modal fade"
+        id="modalConfigurarInventario"
+        tabindex="-1"
+        aria-hidden="true"
+    >
+        <div class="modal-dialog modal-dialog-centered">
+
+            <div class="modal-content border-0 rounded-4 shadow">
+
+                <form
+                    method="POST"
+                    action="{{ route('inventario.actualizar', $detalle->id) }}"
+                >
+
+                    @csrf
+                    @method('PUT')
+
+                    <div class="modal-header border-0">
+
+                        <div>
+
+                            <h5 class="modal-title fw-bold">
+                                Configurar inventario
+                            </h5>
+
+                            <small class="text-muted">
+                                {{ $detalle->medicamento->nombre }}
+                            </small>
+
+                        </div>
+
+                        <button
+                            type="button"
+                            class="btn-close"
+                            data-bs-dismiss="modal"
+                        ></button>
+
+                    </div>
+
+
+                    <div class="modal-body">
+
+                        {{-- STOCK ACTUAL --}}
+
+                        <div class="mb-3">
+
+                            <label class="form-label fw-semibold">
+                                Stock actual
+                            </label>
+
+                            <input
+                                type="number"
+                                class="form-control"
+                                value="{{ $detalle->cantidad_actual }}"
+                                disabled
+                            >
+
+                            <small class="text-muted">
+                                El stock actual se modifica mediante entradas,
+                                salidas o transferencias.
+                            </small>
+
+                        </div>
+
+
+                        <div class="row g-3">
+
+                            {{-- STOCK MÍNIMO --}}
+
+                            <div class="col-md-6">
+
+                                <label
+                                    for="cantidad_minima"
+                                    class="form-label fw-semibold"
+                                >
+                                    Stock mínimo *
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="cantidad_minima"
+                                    id="cantidad_minima"
+                                    class="form-control"
+                                    min="0"
+                                    value="{{ old('cantidad_minima', $detalle->cantidad_minima) }}"
+                                    required
+                                >
+
+                                <small class="text-muted">
+                                    Cuando el stock llegue a este valor,
+                                    se generará una alerta.
+                                </small>
+
+                            </div>
+
+
+                            {{-- STOCK MÁXIMO --}}
+
+                            <div class="col-md-6">
+
+                                <label
+                                    for="cantidad_maxima"
+                                    class="form-label fw-semibold"
+                                >
+                                    Stock máximo
+                                </label>
+
+                                <input
+                                    type="number"
+                                    name="cantidad_maxima"
+                                    id="cantidad_maxima"
+                                    class="form-control"
+                                    min="0"
+                                    value="{{ old('cantidad_maxima', $detalle->cantidad_maxima) }}"
+                                >
+
+                                <small class="text-muted">
+                                    Opcional.
+                                </small>
+
+                            </div>
+
+                        </div>
+
+
+                        {{-- LOTE Y VENCIMIENTO --}}
+
+                        <div class="row g-3 mt-1">
+
+                            <div class="col-md-6">
+
+                                <label
+                                    for="lote_configuracion"
+                                    class="form-label fw-semibold"
+                                >
+                                    Lote
+                                </label>
+
+                                <input
+                                    type="text"
+                                    name="lote"
+                                    id="lote_configuracion"
+                                    class="form-control"
+                                    maxlength="100"
+                                    value="{{ old('lote', $detalle->lote) }}"
+                                >
+
+                            </div>
+
+
+                            <div class="col-md-6">
+
+                                <label
+                                    for="fecha_vencimiento_configuracion"
+                                    class="form-label fw-semibold"
+                                >
+                                    Fecha de vencimiento
+                                </label>
+
+                                <input
+                                    type="date"
+                                    name="fecha_vencimiento"
+                                    id="fecha_vencimiento_configuracion"
+                                    class="form-control"
+                                    value="{{ old(
+                                        'fecha_vencimiento',
+                                        $detalle->fecha_vencimiento?->format('Y-m-d')
+                                    ) }}"
+                                >
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="modal-footer border-0">
+
+                        <button
+                            type="button"
+                            class="btn btn-light"
+                            data-bs-dismiss="modal"
+                        >
+                            Cancelar
+                        </button>
+
+                        <button
+                            type="submit"
+                            class="btn btn-primary"
+                        >
+                            <i class="bi bi-check-lg me-1"></i>
+                            Guardar cambios
+                        </button>
+
+                    </div>
+
+                </form>
+
+            </div>
+
+        </div>
+    </div>
 
 </div>

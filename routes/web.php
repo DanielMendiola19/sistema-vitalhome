@@ -186,6 +186,11 @@ Route::middleware(['auth', 'inactivity', 'must.change.password'])->group(functio
         'detalle'
     ])->name('inventario.detalle');
 
+    Route::put('/inventario/{inventario}', [
+        InventarioController::class,
+        'actualizar'
+    ])->name('inventario.actualizar');
+
     // Movimientos
     Route::post('/inventario/entrada', [
         InventarioController::class,

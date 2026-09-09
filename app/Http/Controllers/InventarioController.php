@@ -322,6 +322,73 @@ class InventarioController extends Controller
         );
     }
 
+    public function actualizar(
+        Request $request,
+        Inventario $inventario
+    ): RedirectResponse {
+        $datos = $request->validate([
+            'cantidad_minima' => [
+                'required',
+                'integer',
+                'min:0',
+            ],
+
+            'cantidad_maxima' => [
+                'nullable',
+                'integer',
+                'min:0',
+            ],
+
+            'fecha_vencimiento' => [
+                'nullable',
+                'date',
+            ],
+
+            'lote' => [
+                'nullable',
+                'string',
+                'max:100',
+            ],
+        ]);
+
+        if (
+            $datos['cantidad_maxima'] !== null
+            && $datos['cantidad_maxima'] < $datos['cantidad_minima']
+        ) {
+            return back()
+                ->withInput()
+                ->with(
+                    'error',
+                    'El stock máximo no puede ser menor que el stock mínimo.'
+                );
+        }
+
+        $inventario->cantidad_minima =
+            $datos['cantidad_minima'];
+
+        $inventario->cantidad_maxima =
+            $datos['cantidad_maxima'];
+
+        $inventario->fecha_vencimiento =
+            $datos['fecha_vencimiento'];
+
+        $inventario->lote =
+            $datos['lote'];
+
+        $inventario->estado =
+            $this->inventarioService->determinarEstado(
+                $inventario->cantidad_actual,
+                $inventario->cantidad_minima
+            );
+
+        $inventario->save();
+
+        return back()->with(
+            'success',
+            'Configuración del inventario actualizada correctamente.'
+        );
+    }
+
     /**
      * Registrar entrada.
      */

@@ -30,13 +30,31 @@
 
         </div>
 
-        <a
-            href="#"
-            class="btn btn-outline-secondary"
+        <button
+            type="button"
+            class="btn btn-outline-secondary position-relative"
+            data-bs-toggle="modal"
+            data-bs-target="#modalAlertas"
         >
             <i class="bi bi-exclamation-triangle me-2"></i>
             Ver alertas
-        </a>
+
+            @php
+                $totalAlertas =
+                    $medicamentosAgotados->count()
+                    + $medicamentosStockBajo->count()
+                    + $medicamentosPorVencer->count()
+                    + $medicamentosVencidos->count();
+            @endphp
+
+            @if($totalAlertas > 0)
+                <span
+                    class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
+                >
+                    {{ $totalAlertas }}
+                </span>
+            @endif
+        </button>
 
     </div>
 
@@ -211,7 +229,7 @@
                         </div>
 
                         <a
-                            href="#"
+                            href="{{ route('inventario.index') }}"
                             class="text-decoration-none"
                             style="color:#388E3C;"
                         >
@@ -327,25 +345,111 @@
 
                     <div class="mt-4">
 
-                        <div class="d-flex mb-4">
+                        @forelse($actividadReciente as $movimiento)
 
-                            <div class="me-3 text-secondary">
-                                <i class="bi bi-file-earmark-text fs-5"></i>
-                            </div>
+                            @php
+                                $tipo = strtolower($movimiento->tipo_movimiento);
 
-                            <div>
+                                $configuracion = match ($tipo) {
+                                    'entrada' => [
+                                        'icono' => 'bi-box-arrow-in-down',
+                                        'texto' => 'Entrada',
+                                        'clase' => 'text-success',
+                                    ],
 
-                                <div class="small">
-                                    Sistema iniciado correctamente
+                                    'salida' => [
+                                        'icono' => 'bi-box-arrow-up',
+                                        'texto' => 'Salida',
+                                        'clase' => 'text-danger',
+                                    ],
+
+                                    'transferencia' => [
+                                        'icono' => 'bi-arrow-left-right',
+                                        'texto' => 'Transferencia',
+                                        'clase' => 'text-primary',
+                                    ],
+
+                                    default => [
+                                        'icono' => 'bi-arrow-repeat',
+                                        'texto' => ucfirst($tipo),
+                                        'clase' => 'text-secondary',
+                                    ],
+                                };
+
+                                $medicamento =
+                                    $movimiento->inventario?->medicamento
+                                    ?? $movimiento->inventarioPaciente?->medicamento;
+
+                                $nombreMedicamento =
+                                    $medicamento?->nombre ?? 'Medicamento';
+
+                                $paciente =
+                                    $movimiento->paciente
+                                    ?? $movimiento->inventarioPaciente?->paciente;
+
+                                $usuario = $movimiento->usuario;
+                            @endphp
+
+                            <div class="d-flex mb-4">
+
+                                {{-- ICONO --}}
+                                <div class="me-3 {{ $configuracion['clase'] }}">
+                                    <i class="bi {{ $configuracion['icono'] }} fs-5"></i>
                                 </div>
 
-                                <small class="text-secondary-vital">
-                                    Ahora
-                                </small>
+                                {{-- INFORMACIÓN DE LA ACTIVIDAD --}}
+                                <div class="flex-grow-1">
+
+                                    {{-- PRIMERA LÍNEA: ACCIÓN --}}
+                                    <div class="small fw-semibold">
+                                        {{ $configuracion['texto'] }}
+                                        de {{ $movimiento->cantidad }}
+                                        {{ $movimiento->cantidad == 1 ? 'unidad' : 'unidades' }}
+                                        de {{ $nombreMedicamento }}
+                                    </div>
+
+                                    {{-- SEGUNDA LÍNEA: PACIENTE --}}
+                                    @if($paciente)
+                                        <div class="small text-secondary-vital mt-1">
+                                            <i class="bi bi-person-heart me-1"></i>
+                                            Paciente:
+                                            {{ $paciente->nombre }}
+                                            {{ $paciente->apellido }}
+                                        </div>
+                                    @endif
+
+                                    {{-- TERCERA LÍNEA: USUARIO --}}
+                                    @if($usuario)
+                                        <div class="small text-secondary-vital mt-1">
+                                            <i class="bi bi-person-fill me-1"></i>
+                                            Realizado por:
+                                            {{ ucfirst($usuario->rol) }}
+                                            {{ $usuario->nombre }}
+                                            {{ $usuario->apellido }}
+                                        </div>
+                                    @endif
+
+                                    {{-- CUARTA LÍNEA: HORA --}}
+                                    <div class="small text-secondary-vital mt-1">
+                                        <i class="bi bi-clock me-1"></i>
+                                        {{ $movimiento->fecha?->diffForHumans() }}
+                                    </div>
+
+                                </div>
 
                             </div>
 
-                        </div>
+                        @empty
+
+                            <div class="text-center text-secondary py-4">
+
+                                <i class="bi bi-clock-history fs-3 d-block mb-2"></i>
+
+                                No hay movimientos recientes.
+
+                            </div>
+
+                        @endforelse
 
                     </div>
 
@@ -357,6 +461,293 @@
 
     </div>
 
+</div>
+
+
+<!-- MODAL DE ALERTAS -->
+<div
+    class="modal fade"
+    id="modalAlertas"
+    tabindex="-1"
+    aria-labelledby="modalAlertasLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 rounded-4 shadow">
+
+            <div class="modal-header border-0">
+                <div>
+                    <h5
+                        class="modal-title fw-bold"
+                        id="modalAlertasLabel"
+                        style="color:#0f172a;"
+                    >
+                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+                        Alertas del sistema
+                    </h5>
+
+                    <small class="text-secondary-vital">
+                        Situación actual del inventario
+                    </small>
+                </div>
+
+                <button
+                    type="button"
+                    class="btn-close"
+                    data-bs-dismiss="modal"
+                ></button>
+            </div>
+
+            <div class="modal-body">
+
+                {{-- MEDICAMENTOS AGOTADOS --}}
+                @if($medicamentosAgotados->count() > 0)
+
+                    <div class="mb-4">
+
+                        <h6 class="fw-bold text-danger mb-3">
+                            <i class="bi bi-x-circle-fill me-1"></i>
+                            Medicamentos agotados
+                        </h6>
+
+                        @foreach($medicamentosAgotados as $inventario)
+
+                            <div
+                                class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3"
+                                style="background:#FFEDED;"
+                            >
+
+                                <div>
+                                    <div class="fw-semibold">
+                                        {{ $inventario->medicamento->nombre }}
+                                    </div>
+
+                                    <small class="text-secondary-vital">
+                                        Stock actual: 0 unidades
+                                    </small>
+                                </div>
+
+                                <span class="badge rounded-pill bg-danger">
+                                    Agotado
+                                </span>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+
+                {{-- STOCK BAJO --}}
+                @if($medicamentosStockBajo->count() > 0)
+
+                    <div>
+
+                        <h6 class="fw-bold mb-3" style="color:#FF9800;">
+                            <i class="bi bi-exclamation-circle-fill me-1"></i>
+                            Stock bajo
+                        </h6>
+
+                        @foreach($medicamentosStockBajo as $inventario)
+
+                            <div
+                                class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3"
+                                style="background:#FFF8E1;"
+                            >
+
+                                <div>
+                                    <div class="fw-semibold">
+                                        {{ $inventario->medicamento->nombre }}
+                                    </div>
+
+                                    <small class="text-secondary-vital">
+                                        Stock actual:
+                                        {{ $inventario->cantidad_actual }}
+                                        unidades
+                                        · Mínimo:
+                                        {{ $inventario->cantidad_minima }}
+                                    </small>
+                                </div>
+
+                                <span
+                                    class="badge rounded-pill"
+                                    style="background:#FFF3CD;color:#FF9800;"
+                                >
+                                    Stock bajo
+                                </span>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+                {{-- MEDICAMENTOS PRÓXIMOS A VENCER --}}
+                @if($medicamentosPorVencer->count() > 0)
+
+                    <div class="mt-4">
+
+                        <h6 class="fw-bold mb-3" style="color:#FF9800;">
+                            <i class="bi bi-calendar-x-fill me-1"></i>
+                            Próximos a vencer
+                        </h6>
+
+                        @foreach($medicamentosPorVencer as $inventario)
+
+                            @php
+                                $diasRestantes = now()->startOfDay()
+                                    ->diffInDays(
+                                        $inventario->fecha_vencimiento,
+                                        false
+                                    );
+                            @endphp
+
+                            <div
+                                class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3"
+                                style="background:#FFF8E1;"
+                            >
+
+                                <div>
+
+                                    <div class="fw-semibold">
+                                        {{ $inventario->medicamento->nombre }}
+                                    </div>
+
+                                    <small class="text-secondary-vital">
+
+                                        Vence:
+                                        {{ $inventario->fecha_vencimiento->format('d/m/Y') }}
+
+                                        ·
+
+                                        @if($diasRestantes === 0)
+                                            vence hoy
+                                        @elseif($diasRestantes === 1)
+                                            1 día restante
+                                        @else
+                                            {{ $diasRestantes }} días restantes
+                                        @endif
+
+                                    </small>
+
+                                </div>
+
+                                <span
+                                    class="badge rounded-pill"
+                                    style="background:#FFF3CD;color:#FF9800;"
+                                >
+                                    Próximo a vencer
+                                </span>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+
+
+                {{-- MEDICAMENTOS VENCIDOS --}}
+                @if($medicamentosVencidos->count() > 0)
+
+                    <div class="mb-4">
+
+                        <h6 class="fw-bold text-danger mb-3">
+                            <i class="bi bi-calendar-x-fill me-1"></i>
+                            Medicamentos vencidos
+                        </h6>
+
+                        @foreach($medicamentosVencidos as $inventario)
+
+                            <div
+                                class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3"
+                                style="background:#FFEDED;"
+                            >
+
+                                <div>
+
+                                    <div class="fw-semibold">
+                                        {{ $inventario->medicamento->nombre }}
+                                    </div>
+
+                                    <small class="text-secondary-vital">
+                                        Venció:
+                                        {{ $inventario->fecha_vencimiento->format('d/m/Y') }}
+
+                                        ·
+
+                                        Stock actual:
+                                        {{ $inventario->cantidad_actual }}
+                                        unidades
+                                    </small>
+
+                                </div>
+
+                                <span class="badge rounded-pill bg-danger">
+                                    Vencido
+                                </span>
+
+                            </div>
+
+                        @endforeach
+
+                    </div>
+
+                @endif
+
+
+                {{-- SIN ALERTAS --}}
+                @if($totalAlertas === 0)
+
+                    <div class="text-center py-5">
+
+                        <i
+                            class="bi bi-check-circle-fill text-success"
+                            style="font-size:3rem;"
+                        ></i>
+
+                        <h6 class="fw-bold mt-3 mb-1">
+                            Todo está en orden
+                        </h6>
+
+                        <p class="text-secondary-vital mb-0">
+                            No existen alertas de inventario actualmente.
+                        </p>
+
+                    </div>
+
+                @endif
+
+            </div>
+
+            <div class="modal-footer border-0">
+
+                <a
+                    href="{{ route('inventario.index') }}"
+                    class="btn btn-success"
+                >
+                    <i class="bi bi-box-seam me-1"></i>
+                    Ir al inventario
+                </a>
+
+                <button
+                    type="button"
+                    class="btn btn-light"
+                    data-bs-dismiss="modal"
+                >
+                    Cerrar
+                </button>
+
+            </div>
+
+        </div>
+    </div>
 </div>
 
 @endsection

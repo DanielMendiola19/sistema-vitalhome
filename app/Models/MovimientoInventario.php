@@ -13,6 +13,7 @@ class MovimientoInventario extends Model
         'inventario_id',
         'inventario_paciente_id',
         'paciente_id',
+        'usuario_id',
         'fecha',
         'tipo_movimiento',
         'grupo_movimiento',
@@ -47,6 +48,13 @@ class MovimientoInventario extends Model
         return $this->belongsTo(
             Paciente::class,
             'paciente_id'
+        );
+    }
+    public function usuario(): BelongsTo
+    {
+        return $this->belongsTo(
+            User::class,
+            'usuario_id'
         );
     }
 }

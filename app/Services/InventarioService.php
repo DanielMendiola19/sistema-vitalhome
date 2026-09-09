@@ -104,6 +104,7 @@ class InventarioService
                 'inventario_id' => $inventario->id,
                 'inventario_paciente_id' => null,
                 'paciente_id' => null,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' => 'entrada',
                 'grupo_movimiento' => (string) Str::uuid(),
@@ -167,6 +168,7 @@ class InventarioService
                 'inventario_id' => $inventario->id,
                 'inventario_paciente_id' => null,
                 'paciente_id' => null,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' => 'salida',
                 'grupo_movimiento' => (string) Str::uuid(),
@@ -231,6 +233,7 @@ class InventarioService
                     $inventarioPaciente->id,
                 'paciente_id' =>
                     $inventarioPaciente->paciente_id,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' => 'salida',
                 'grupo_movimiento' => (string) Str::uuid(),
@@ -384,6 +387,7 @@ class InventarioService
                 'inventario_paciente_id' => null,
                 'paciente_id' =>
                     $paciente->id,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' =>
                     'transferencia',
@@ -405,6 +409,7 @@ class InventarioService
                     $inventarioPaciente->id,
                 'paciente_id' =>
                     $paciente->id,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' =>
                     'transferencia',
@@ -518,6 +523,7 @@ class InventarioService
                 'inventario_id' => null,
                 'inventario_paciente_id' => $inventarioPaciente->id,
                 'paciente_id' => $paciente->id,
+                'usuario_id' => auth()->id(),
                 'fecha' => now(),
                 'tipo_movimiento' => 'entrada',
                 'grupo_movimiento' => (string) Str::uuid(),
