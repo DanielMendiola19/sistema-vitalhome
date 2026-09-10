@@ -1,225 +1,226 @@
 <aside class="sidebar">
 
-    {{-- =====================================================
-         LOGO
-         ===================================================== --}}
+{{-- =====================================================
+     LOGO
+     ===================================================== --}}
 
-    <div class="sidebar-logo">
+<div class="sidebar-logo">
 
-        <img
-            src="{{ asset('images/logo-vitalhome.png') }}"
-            alt="VITALHOME"
-        >
+    <img
+        src="{{ asset('images/logo-vitalhome.png') }}"
+        alt="VITALHOME"
+    >
 
-    </div>
+</div>
 
 
-    {{-- =====================================================
-         MENÚ
-         ===================================================== --}}
+{{-- =====================================================
+     MENÚ
+     ===================================================== --}}
 
-    <nav>
+<nav>
+
+    {{-- DASHBOARD --}}
+
+    <a
+        href="{{ route('dashboard') }}"
+        class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+    >
+
+        <i class="bi bi-house"></i>
+
+        <span>
+            Dashboard
+        </span>
+
+    </a>
+
+
+    {{-- PACIENTES --}}
+
+    <a
+        href="{{ route('pacientes.index') }}"
+        class="nav-link {{ request()->routeIs('pacientes.*') ? 'active' : '' }}"
+    >
+
+        <i class="bi bi-people"></i>
+
+        <span>
+            Pacientes
+        </span>
+
+    </a>
+
+
+    {{-- MEDICAMENTOS --}}
+
+    @if (Auth::user()->rol === 'administrador')
 
         <a
-            href="{{ route('dashboard') }}"
-            class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+            href="{{ route('medicamentos.index') }}"
+            class="nav-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}"
         >
 
-            <i class="bi bi-house"></i>
+            <i class="bi bi-capsule"></i>
 
             <span>
-                Dashboard
+                Medicamentos
+            </span>
+
+        </a>
+
+    @endif
+
+
+    {{-- TRATAMIENTOS / KARDEX --}}
+
+    <a
+        href="{{ route('tratamientos_kardex.lista') }}"
+        class="nav-link {{ request()->routeIs('tratamientos_kardex.*') ? 'active' : '' }}"
+    >
+
+        <i class="bi bi-clipboard2"></i>
+
+        <span>
+            Tratamientos/Kardex
+        </span>
+
+    </a>
+
+
+    {{-- INVENTARIO --}}
+
+    <a
+        href="{{ route('inventario.index') }}"
+        class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"
+    >
+
+        <i class="bi bi-box-seam"></i>
+
+        <span>
+            Inventario
+        </span>
+
+    </a>
+
+
+    {{-- =====================================================
+         OPCIONES SOLO ADMINISTRADOR
+         ===================================================== --}}
+
+    @if (Auth::user()->rol === 'administrador')
+
+        {{-- REPORTES --}}
+
+        <a
+            href="{{ route('reportes.index') }}"
+            class="nav-link {{ request()->routeIs('reportes.*') ? 'active' : '' }}"
+        >
+
+            <i class="bi bi-bar-chart"></i>
+
+            <span>
+                Reportes
             </span>
 
         </a>
 
 
+        {{-- USUARIOS --}}
+
         <a
-            href="{{ route('pacientes.index') }}"
-            class="nav-link {{ request()->routeIs('pacientes.*') ? 'active' : '' }}"
+            href="{{ route('usuarios.index') }}"
+            class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"
         >
 
-            <i class="bi bi-people"></i>
+            <i class="bi bi-person-gear"></i>
 
             <span>
-                Pacientes
+                Usuarios
             </span>
 
         </a>
 
-        @if (Auth::user()->rol === 'administrador')
 
-         <a
-                href="{{ route('medicamentos.index') }}"
-                class="nav-link {{ request()->routeIs('medicamentos.*') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-capsule"></i>
-
-                <span>
-                    Medicamentos
-                </span>
-
-            </a>
-        @endif
-
+        {{-- CONFIGURACIÓN --}}
 
         <a
             href="#"
             class="nav-link"
         >
 
-            <i class="bi bi-clipboard2"></i>
+            <i class="bi bi-gear"></i>
 
             <span>
-                Kardex
+                Configuración
             </span>
 
         </a>
 
+    @endif
 
-        <a
-            href="{{ route('inventario.index') }}"
-            class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"
-        >
-            <i class="bi bi-box-seam"></i>
-
-            <span>
-                Inventario
-            </span>
-        </a>
+</nav>
 
 
-        <a
-            href="#"
-            class="nav-link"
-        >
+{{-- =====================================================
+     USUARIO
+     ===================================================== --}}
 
-            <i class="bi bi-file-earmark-text"></i>
+<div class="sidebar-user">
 
-            <span>
-                Tratamientos
-            </span>
+    <div class="sidebar-user-info">
 
-        </a>
+        <div class="user-avatar">
 
-
-        <a
-            href="#"
-            class="nav-link"
-        >
-
-            <i class="bi bi-exclamation-triangle"></i>
-
-            <span>
-                Reposición
-            </span>
-
-        </a>
-
-
-        @if (Auth::user()->rol === 'administrador')
-
-            {{-- =====================================================
-                REPORTES
-                ===================================================== --}}
-
-            <a
-                href="#"
-                class="nav-link"
-            >
-
-                <i class="bi bi-bar-chart"></i>
-
-                <span>
-                    Reportes
-                </span>
-
-            </a>
-
-
-            {{-- =====================================================
-                USUARIOS
-                ===================================================== --}}
-
-            <a
-                href="{{ route('usuarios.index') }}"
-                class="nav-link {{ request()->routeIs('usuarios.*') ? 'active' : '' }}"
-            >
-
-                <i class="bi bi-person-gear"></i>
-
-                <span>
-                    Usuarios
-                </span>
-
-            </a>
-
-
-            {{-- =====================================================
-                CONFIGURACIÓN
-                ===================================================== --}}
-
-            <a
-                href="#"
-                class="nav-link"
-            >
-
-                <i class="bi bi-gear"></i>
-
-                <span>
-                    Configuración
-                </span>
-
-            </a>
-
-        @endif
-
-    </nav>
-
-
-    {{-- =====================================================
-         USUARIO
-         ===================================================== --}}
-
-    <div class="sidebar-user">
-
-        <div class="sidebar-user-info">
-
-            <div class="user-avatar">
-                {{ strtoupper(
-                    substr(Auth::user()->nombre, 0, 1) .
-                    substr(Auth::user()->apellido, 0, 1)
-                ) }}
-            </div>
-
-            <div>
-
-                <div class="fw-semibold">
-                    {{ Auth::user()->nombre }}
-                    {{ Auth::user()->apellido }}
-                </div>
-
-                <small class="text-secondary-vital">
-                    {{ ucfirst(Auth::user()->rol) }}
-                </small>
-
-            </div>
+            {{ strtoupper(
+                substr(Auth::user()->nombre, 0, 1) .
+                substr(Auth::user()->apellido, 0, 1)
+            ) }}
 
         </div>
 
-        <form action="{{ route('logout') }}" method="POST">
-            @csrf
+        <div>
 
-            <button
-                type="submit"
-                class="logout-btn"
-            >
-                <i class="bi bi-box-arrow-right"></i>
-                Cerrar sesión
-            </button>
-        </form>
+            <div class="fw-semibold">
+
+                {{ Auth::user()->nombre }}
+                {{ Auth::user()->apellido }}
+
+            </div>
+
+            <small class="text-secondary-vital">
+
+                {{ ucfirst(Auth::user()->rol) }}
+
+            </small>
+
+        </div>
 
     </div>
+
+
+    {{-- CERRAR SESIÓN --}}
+
+    <form
+        action="{{ route('logout') }}"
+        method="POST"
+    >
+
+        @csrf
+
+        <button
+            type="submit"
+            class="logout-btn"
+        >
+
+            <i class="bi bi-box-arrow-right"></i>
+
+            Cerrar sesión
+
+        </button>
+
+    </form>
+
+</div>
 
 </aside>
