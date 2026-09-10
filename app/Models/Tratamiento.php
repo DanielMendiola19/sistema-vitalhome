@@ -17,6 +17,9 @@ class Tratamiento extends Model
         'via_administracion',
         'fecha_inicio',
         'fecha_fin',
+        'hora_tm',
+        'hora_tt',
+        'hora_tn',
         'indicaciones',
         'estado',
     ];
@@ -24,15 +27,30 @@ class Tratamiento extends Model
     protected $casts = [
         'fecha_inicio' => 'date',
         'fecha_fin' => 'date',
+        'hora_tm' => 'datetime:H:i',
+        'hora_tt' => 'datetime:H:i',
+        'hora_tn' => 'datetime:H:i',
     ];
 
+    /**
+     * Paciente al que pertenece el tratamiento.
+     */
     public function paciente(): BelongsTo
     {
-        return $this->belongsTo(Paciente::class, 'paciente_id');
+        return $this->belongsTo(
+            Paciente::class,
+            'paciente_id'
+        );
     }
 
+    /**
+     * Medicamento utilizado en el tratamiento.
+     */
     public function medicamento(): BelongsTo
     {
-        return $this->belongsTo(Medicamento::class, 'medicamento_id');
+        return $this->belongsTo(
+            Medicamento::class,
+            'medicamento_id'
+        );
     }
 }

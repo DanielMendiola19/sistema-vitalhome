@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
-
 class Paciente extends Model
 {
     protected $table = 'pacientes';
@@ -19,6 +18,7 @@ class Paciente extends Model
         'telefono',
         'direccion',
         'observaciones',
+        'diagnostico',
     ];
 
     protected $casts = [
@@ -69,25 +69,25 @@ class Paciente extends Model
         );
     }
 
-   /**
- * Inventarios individuales del paciente.
- */
-public function inventariosPacientes(): HasMany
-{
-    return $this->hasMany(
-        InventarioPaciente::class,
-        'paciente_id'
-    );
-}
+    /**
+     * Inventarios individuales del paciente.
+     */
+    public function inventariosPacientes(): HasMany
+    {
+        return $this->hasMany(
+            InventarioPaciente::class,
+            'paciente_id'
+        );
+    }
 
-/**
- * Movimientos de inventario relacionados.
- */
-public function movimientosInventario(): HasMany
-{
-    return $this->hasMany(
-        MovimientoInventario::class,
-        'paciente_id'
-    );
-}
+    /**
+     * Movimientos de inventario relacionados.
+     */
+    public function movimientosInventario(): HasMany
+    {
+        return $this->hasMany(
+            MovimientoInventario::class,
+            'paciente_id'
+        );
+    }
 }
