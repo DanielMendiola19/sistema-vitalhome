@@ -58,6 +58,11 @@
 
     </div>
 
+
+    {{-- ====================================================== --}}
+    {{-- TARJETAS DE ESTADÍSTICAS --}}
+    {{-- ====================================================== --}}
+
     <div class="row g-3 mb-4">
 
         <div class="col-12 col-sm-6 col-xl-3">
@@ -96,6 +101,7 @@
 
         </div>
 
+
         <div class="col-12 col-sm-6 col-xl-3">
 
             <div class="card stat-card stat-medicamentos h-100">
@@ -132,6 +138,7 @@
 
         </div>
 
+
         <div class="col-12 col-sm-6 col-xl-3">
 
             <div class="card stat-card stat-reposicion h-100">
@@ -167,6 +174,7 @@
             </div>
 
         </div>
+
 
         <div class="col-12 col-sm-6 col-xl-3">
 
@@ -206,7 +214,14 @@
 
     </div>
 
+
+    {{-- ====================================================== --}}
+    {{-- CONTENIDO PRINCIPAL --}}
+    {{-- ====================================================== --}}
+
     <div class="row g-4">
+
+        {{-- MEDICAMENTOS QUE REQUIEREN ATENCIÓN --}}
 
         <div class="col-lg-8">
 
@@ -238,6 +253,7 @@
 
                     </div>
 
+
                     <div class="table-responsive">
 
                         <table class="table align-middle">
@@ -261,7 +277,7 @@
                                     <tr>
 
                                         <td class="fw-semibold">
-                                            {{ $inventario->medicamento->nombre }}
+                                            {{ $inventario->medicamento_nombre }}
                                         </td>
 
                                         <td>
@@ -278,7 +294,10 @@
 
                                         <td>
 
-                                            @if ($inventario->cantidad_actual <= $inventario->cantidad_minima)
+                                            @if(
+                                                $inventario->cantidad_actual
+                                                <= $inventario->cantidad_minima
+                                            )
 
                                                 <span
                                                     class="badge rounded-pill"
@@ -329,6 +348,9 @@
 
         </div>
 
+
+        {{-- ACTIVIDAD RECIENTE --}}
+
         <div class="col-lg-4">
 
             <div class="card section-card h-100">
@@ -348,9 +370,13 @@
                         @forelse($actividadReciente as $movimiento)
 
                             @php
-                                $tipo = strtolower($movimiento->tipo_movimiento);
+
+                                $tipo = strtolower(
+                                    $movimiento->tipo_movimiento
+                                );
 
                                 $configuracion = match ($tipo) {
+
                                     'entrada' => [
                                         'icono' => 'bi-box-arrow-in-down',
                                         'texto' => 'Entrada',
@@ -376,63 +402,93 @@
                                     ],
                                 };
 
-                                $medicamento =
-                                    $movimiento->inventario?->medicamento
-                                    ?? $movimiento->inventarioPaciente?->medicamento;
-
-                                $nombreMedicamento =
-                                    $medicamento?->nombre ?? 'Medicamento';
-
-                                $paciente =
-                                    $movimiento->paciente
-                                    ?? $movimiento->inventarioPaciente?->paciente;
-
-                                $usuario = $movimiento->usuario;
                             @endphp
+
 
                             <div class="d-flex mb-4">
 
                                 {{-- ICONO --}}
-                                <div class="me-3 {{ $configuracion['clase'] }}">
-                                    <i class="bi {{ $configuracion['icono'] }} fs-5"></i>
+
+                                <div
+                                    class="me-3 {{ $configuracion['clase'] }}"
+                                >
+                                    <i
+                                        class="bi {{ $configuracion['icono'] }} fs-5"
+                                    ></i>
                                 </div>
 
-                                {{-- INFORMACIÓN DE LA ACTIVIDAD --}}
+
+                                {{-- INFORMACIÓN --}}
+
                                 <div class="flex-grow-1">
 
-                                    {{-- PRIMERA LÍNEA: ACCIÓN --}}
+                                    {{-- ACCIÓN --}}
+
                                     <div class="small fw-semibold">
+
                                         {{ $configuracion['texto'] }}
+
                                         de {{ $movimiento->cantidad }}
-                                        {{ $movimiento->cantidad == 1 ? 'unidad' : 'unidades' }}
-                                        de {{ $nombreMedicamento }}
+
+                                        {{
+                                            $movimiento->cantidad == 1
+                                                ? 'unidad'
+                                                : 'unidades'
+                                        }}
+
+                                        de {{ $movimiento->medicamento_nombre }}
+
                                     </div>
 
-                                    {{-- SEGUNDA LÍNEA: PACIENTE --}}
-                                    @if($paciente)
+
+                                    {{-- PACIENTE --}}
+
+                                    @if($movimiento->paciente_nombre)
+
                                         <div class="small text-secondary-vital mt-1">
+
                                             <i class="bi bi-person-heart me-1"></i>
+
                                             Paciente:
-                                            {{ $paciente->nombre }}
-                                            {{ $paciente->apellido }}
+
+                                            {{ $movimiento->paciente_nombre }}
+
+                                            {{ $movimiento->paciente_apellido }}
+
                                         </div>
+
                                     @endif
 
-                                    {{-- TERCERA LÍNEA: USUARIO --}}
-                                    @if($usuario)
+
+                                    {{-- USUARIO --}}
+
+                                    @if($movimiento->usuario_nombre)
+
                                         <div class="small text-secondary-vital mt-1">
+
                                             <i class="bi bi-person-fill me-1"></i>
+
                                             Realizado por:
-                                            {{ ucfirst($usuario->rol) }}
-                                            {{ $usuario->nombre }}
-                                            {{ $usuario->apellido }}
+
+                                            {{ ucfirst($movimiento->usuario_rol) }}
+
+                                            {{ $movimiento->usuario_nombre }}
+
+                                            {{ $movimiento->usuario_apellido }}
+
                                         </div>
+
                                     @endif
 
-                                    {{-- CUARTA LÍNEA: HORA --}}
+
+                                    {{-- FECHA --}}
+
                                     <div class="small text-secondary-vital mt-1">
+
                                         <i class="bi bi-clock me-1"></i>
+
                                         {{ $movimiento->fecha?->diffForHumans() }}
+
                                     </div>
 
                                 </div>
@@ -443,7 +499,9 @@
 
                             <div class="text-center text-secondary py-4">
 
-                                <i class="bi bi-clock-history fs-3 d-block mb-2"></i>
+                                <i
+                                    class="bi bi-clock-history fs-3 d-block mb-2"
+                                ></i>
 
                                 No hay movimientos recientes.
 
@@ -464,7 +522,10 @@
 </div>
 
 
-<!-- MODAL DE ALERTAS -->
+{{-- ========================================================== --}}
+{{-- MODAL DE ALERTAS --}}
+{{-- ========================================================== --}}
+
 <div
     class="modal fade"
     id="modalAlertas"
@@ -472,23 +533,36 @@
     aria-labelledby="modalAlertasLabel"
     aria-hidden="true"
 >
+
     <div class="modal-dialog modal-dialog-centered modal-lg">
+
         <div class="modal-content border-0 rounded-4 shadow">
 
+
+            {{-- HEADER --}}
+
             <div class="modal-header border-0">
+
                 <div>
+
                     <h5
                         class="modal-title fw-bold"
                         id="modalAlertasLabel"
                         style="color:#0f172a;"
                     >
-                        <i class="bi bi-exclamation-triangle-fill text-warning me-2"></i>
+
+                        <i
+                            class="bi bi-exclamation-triangle-fill text-warning me-2"
+                        ></i>
+
                         Alertas del sistema
+
                     </h5>
 
                     <small class="text-secondary-vital">
                         Situación actual del inventario
                     </small>
+
                 </div>
 
                 <button
@@ -496,19 +570,31 @@
                     class="btn-close"
                     data-bs-dismiss="modal"
                 ></button>
+
             </div>
+
+
+            {{-- BODY --}}
 
             <div class="modal-body">
 
+
+                {{-- ====================================================== --}}
                 {{-- MEDICAMENTOS AGOTADOS --}}
+                {{-- ====================================================== --}}
+
                 @if($medicamentosAgotados->count() > 0)
 
                     <div class="mb-4">
 
                         <h6 class="fw-bold text-danger mb-3">
+
                             <i class="bi bi-x-circle-fill me-1"></i>
+
                             Medicamentos agotados
+
                         </h6>
+
 
                         @foreach($medicamentosAgotados as $inventario)
 
@@ -518,14 +604,17 @@
                             >
 
                                 <div>
+
                                     <div class="fw-semibold">
-                                        {{ $inventario->medicamento->nombre }}
+                                        {{ $inventario->medicamento_nombre }}
                                     </div>
 
                                     <small class="text-secondary-vital">
                                         Stock actual: 0 unidades
                                     </small>
+
                                 </div>
+
 
                                 <span class="badge rounded-pill bg-danger">
                                     Agotado
@@ -540,15 +629,27 @@
                 @endif
 
 
+                {{-- ====================================================== --}}
                 {{-- STOCK BAJO --}}
+                {{-- ====================================================== --}}
+
                 @if($medicamentosStockBajo->count() > 0)
 
                     <div>
 
-                        <h6 class="fw-bold mb-3" style="color:#FF9800;">
-                            <i class="bi bi-exclamation-circle-fill me-1"></i>
+                        <h6
+                            class="fw-bold mb-3"
+                            style="color:#FF9800;"
+                        >
+
+                            <i
+                                class="bi bi-exclamation-circle-fill me-1"
+                            ></i>
+
                             Stock bajo
+
                         </h6>
+
 
                         @foreach($medicamentosStockBajo as $inventario)
 
@@ -558,18 +659,24 @@
                             >
 
                                 <div>
+
                                     <div class="fw-semibold">
-                                        {{ $inventario->medicamento->nombre }}
+                                        {{ $inventario->medicamento_nombre }}
                                     </div>
 
                                     <small class="text-secondary-vital">
+
                                         Stock actual:
                                         {{ $inventario->cantidad_actual }}
                                         unidades
+
                                         · Mínimo:
                                         {{ $inventario->cantidad_minima }}
+
                                     </small>
+
                                 </div>
+
 
                                 <span
                                     class="badge rounded-pill"
@@ -586,25 +693,40 @@
 
                 @endif
 
-                {{-- MEDICAMENTOS PRÓXIMOS A VENCER --}}
+
+                {{-- ====================================================== --}}
+                {{-- PRÓXIMOS A VENCER --}}
+                {{-- ====================================================== --}}
+
                 @if($medicamentosPorVencer->count() > 0)
 
                     <div class="mt-4">
 
-                        <h6 class="fw-bold mb-3" style="color:#FF9800;">
+                        <h6
+                            class="fw-bold mb-3"
+                            style="color:#FF9800;"
+                        >
+
                             <i class="bi bi-calendar-x-fill me-1"></i>
+
                             Próximos a vencer
+
                         </h6>
+
 
                         @foreach($medicamentosPorVencer as $inventario)
 
                             @php
-                                $diasRestantes = now()->startOfDay()
+
+                                $diasRestantes = now()
+                                    ->startOfDay()
                                     ->diffInDays(
                                         $inventario->fecha_vencimiento,
                                         false
                                     );
+
                             @endphp
+
 
                             <div
                                 class="d-flex justify-content-between align-items-center p-3 mb-2 rounded-3"
@@ -614,27 +736,39 @@
                                 <div>
 
                                     <div class="fw-semibold">
-                                        {{ $inventario->medicamento->nombre }}
+                                        {{ $inventario->medicamento_nombre }}
                                     </div>
 
                                     <small class="text-secondary-vital">
 
                                         Vence:
-                                        {{ $inventario->fecha_vencimiento->format('d/m/Y') }}
+
+                                        {{
+                                            $inventario
+                                                ->fecha_vencimiento
+                                                ->format('d/m/Y')
+                                        }}
 
                                         ·
 
                                         @if($diasRestantes === 0)
+
                                             vence hoy
+
                                         @elseif($diasRestantes === 1)
+
                                             1 día restante
+
                                         @else
+
                                             {{ $diasRestantes }} días restantes
+
                                         @endif
 
                                     </small>
 
                                 </div>
+
 
                                 <span
                                     class="badge rounded-pill"
@@ -652,16 +786,22 @@
                 @endif
 
 
-
+                {{-- ====================================================== --}}
                 {{-- MEDICAMENTOS VENCIDOS --}}
+                {{-- ====================================================== --}}
+
                 @if($medicamentosVencidos->count() > 0)
 
                     <div class="mb-4">
 
                         <h6 class="fw-bold text-danger mb-3">
+
                             <i class="bi bi-calendar-x-fill me-1"></i>
+
                             Medicamentos vencidos
+
                         </h6>
+
 
                         @foreach($medicamentosVencidos as $inventario)
 
@@ -673,21 +813,29 @@
                                 <div>
 
                                     <div class="fw-semibold">
-                                        {{ $inventario->medicamento->nombre }}
+                                        {{ $inventario->medicamento_nombre }}
                                     </div>
 
                                     <small class="text-secondary-vital">
+
                                         Venció:
-                                        {{ $inventario->fecha_vencimiento->format('d/m/Y') }}
 
-                                        ·
+                                        {{
+                                            $inventario
+                                                ->fecha_vencimiento
+                                                ->format('d/m/Y')
+                                        }}
 
-                                        Stock actual:
+                                        · Stock actual:
+
                                         {{ $inventario->cantidad_actual }}
+
                                         unidades
+
                                     </small>
 
                                 </div>
+
 
                                 <span class="badge rounded-pill bg-danger">
                                     Vencido
@@ -702,7 +850,10 @@
                 @endif
 
 
+                {{-- ====================================================== --}}
                 {{-- SIN ALERTAS --}}
+                {{-- ====================================================== --}}
+
                 @if($totalAlertas === 0)
 
                     <div class="text-center py-5">
@@ -726,14 +877,20 @@
 
             </div>
 
+
+            {{-- FOOTER --}}
+
             <div class="modal-footer border-0">
 
                 <a
                     href="{{ route('inventario.index') }}"
                     class="btn btn-success"
                 >
+
                     <i class="bi bi-box-seam me-1"></i>
+
                     Ir al inventario
+
                 </a>
 
                 <button
@@ -747,7 +904,9 @@
             </div>
 
         </div>
+
     </div>
+
 </div>
 
 @endsection

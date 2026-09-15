@@ -56,6 +56,7 @@
             display: flex;
             flex-direction: column;
             align-items: center;
+            border-radius: 8px;
         }
 
         .logo-container img {
@@ -66,6 +67,7 @@
             object-fit: contain;
             object-position: center;
             margin: 0 auto;
+            border-radius: 4px;
         }
 
         .system-title {

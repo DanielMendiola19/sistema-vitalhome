@@ -138,12 +138,14 @@ a {
     max-height: 65px;
 
     object-fit: contain;
+    border-radius: 6px;
 
     transition: transform 0.2s ease;
 }
 
 .sidebar-logo img:hover {
     transform: scale(1.02);
+    border-radius: 8px;
 }
 
 

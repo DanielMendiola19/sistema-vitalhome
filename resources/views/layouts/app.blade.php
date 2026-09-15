@@ -4,46 +4,69 @@
 
 <head>
 
-<meta charset="UTF-8">
-
-<meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
->
-
-@if(!($modoPdf ?? false))
+    <meta charset="UTF-8">
 
     <meta
-        name="csrf-token"
-        content="{{ csrf_token() }}"
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
     >
 
-@endif
+
+    {{-- =========================================================
+         CONFIGURACIÓN SOLO PARA EL SISTEMA WEB
+         ========================================================= --}}
+
+    @if(!($modoPdf ?? false))
+
+        <meta
+            name="csrf-token"
+            content="{{ csrf_token() }}"
+        >
+
+    @endif
 
 
-<title>
-    @yield('title', 'VITALHOME | Sistema de Gestión')
-</title>
+    {{-- =========================================================
+         TÍTULO DE LA PÁGINA
+         ========================================================= --}}
+
+    <title>
+        @yield('title', 'VITALHOME | Sistema de Gestión')
+    </title>
 
 
-@if(!($modoPdf ?? false))
+    @if(!($modoPdf ?? false))
 
-    {{-- Bootstrap Icons --}}
-    <link
-        rel="stylesheet"
-        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
-    >
+        {{-- Favicon oficial de VITALHOME --}}
+        <link
+            rel="icon"
+            type="image/x-icon"
+            href="{{ asset('favicon.ico') }}"
+        >
 
-    {{-- CSS y JS de Vite --}}
-    @vite([
-        'resources/css/app.css',
-        'resources/js/app.js'
-    ])
+        <link
+            rel="shortcut icon"
+            type="image/x-icon"
+            href="{{ asset('favicon.ico') }}"
+        >
 
-@endif
+        {{-- Bootstrap Icons --}}
+        <link
+            rel="stylesheet"
+            href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+        >
+
+        {{-- CSS y JS de Vite --}}
+        @vite([
+            'resources/css/app.css',
+            'resources/js/app.js'
+        ])
+
+    @endif
 
 
-@yield('head')
+    {{-- Contenido adicional del HEAD de cada vista --}}
+    @yield('head')
 
 </head>
 
@@ -55,7 +78,8 @@
      MODO PDF
 
      DomPDF solo recibe el contenido del reporte.
-     No carga sidebar, Vite, menú móvil ni estructura web.
+     No carga sidebar, Vite, favicon, menú móvil
+     ni estructura web.
      ========================================================= --}}
 
 @if($modoPdf ?? false)
@@ -72,6 +96,7 @@
 
     @if(Auth::check())
 
+
         {{-- =====================================================
              ESTRUCTURA PARA USUARIOS AUTENTICADOS
              ===================================================== --}}
@@ -79,7 +104,9 @@
         <div class="app-container">
 
 
-            {{-- SIDEBAR DESKTOP --}}
+            {{-- =================================================
+                 SIDEBAR DESKTOP
+                 ================================================= --}}
 
             <div class="desktop-sidebar">
 
@@ -88,12 +115,16 @@
             </div>
 
 
-            {{-- CONTENIDO PRINCIPAL --}}
+            {{-- =================================================
+                 CONTENIDO PRINCIPAL
+                 ================================================= --}}
 
             <main class="main-content">
 
 
-                {{-- HEADER MÓVIL --}}
+                {{-- =============================================
+                     HEADER MÓVIL
+                     ============================================= --}}
 
                 <div class="mobile-header">
 
@@ -113,7 +144,9 @@
                 </div>
 
 
-                {{-- CONTENIDO DE CADA PÁGINA --}}
+                {{-- =============================================
+                     CONTENIDO DE CADA PÁGINA
+                     ============================================= --}}
 
                 @yield('content')
 
@@ -169,6 +202,7 @@
 
         {{-- =====================================================
              ESTRUCTURA PARA PÁGINAS PÚBLICAS
+             LOGIN, RECUPERACIÓN DE CONTRASEÑA, ETC.
              ===================================================== --}}
 
         @yield('content')
@@ -179,6 +213,10 @@
 
 @endif
 
+
+{{-- =========================================================
+     SCRIPTS ADICIONALES
+     ========================================================= --}}
 
 @if(!($modoPdf ?? false))
 
