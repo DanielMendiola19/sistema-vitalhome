@@ -7,39 +7,72 @@
 <div class="container-fluid">
 
 <div class="d-flex justify-content-between align-items-center mb-4">
+
     <div>
-        <h1 class="h3 mb-1">Editar usuario</h1>
+
+        <h1 class="h3 mb-1">
+            Editar usuario
+        </h1>
+
         <p class="text-muted mb-0">
             Modifica los datos del usuario seleccionado.
         </p>
+
     </div>
 
-    <a href="{{ route('usuarios.index') }}" class="btn btn-secondary">
+
+    <a
+        href="{{ route('usuarios.index') }}"
+        class="btn btn-secondary"
+    >
         <i class="bi bi-arrow-left"></i>
         Volver
     </a>
+
 </div>
 
+
 {{-- Mensajes de validación --}}
+
 @if ($errors->any())
+
     <div class="alert alert-danger">
-        <strong>Se encontraron algunos errores:</strong>
+
+        <strong>
+            Se encontraron algunos errores:
+        </strong>
 
         <ul class="mb-0 mt-2">
+
             @foreach ($errors->all() as $error)
-                <li>{{ $error }}</li>
+
+                <li>
+                    {{ $error }}
+                </li>
+
             @endforeach
+
         </ul>
+
     </div>
+
 @endif
 
+
 <div class="card shadow-sm border-0">
+
     <div class="card-header bg-white py-3">
+
         <h5 class="mb-0">
+
             <i class="bi bi-person-gear"></i>
+
             Información del usuario
+
         </h5>
+
     </div>
+
 
     <div class="card-body">
 
@@ -47,14 +80,22 @@
             action="{{ route('usuarios.update', $usuario->id) }}"
             method="POST"
         >
+
             @csrf
             @method('PUT')
 
+
             <div class="row g-3">
 
+
                 {{-- Nombre --}}
+
                 <div class="col-md-6">
-                    <label for="nombre" class="form-label">
+
+                    <label
+                        for="nombre"
+                        class="form-label"
+                    >
                         Nombre
                     </label>
 
@@ -68,15 +109,24 @@
                     >
 
                     @error('nombre')
+
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>
+
                     @enderror
+
                 </div>
 
+
                 {{-- Apellido --}}
+
                 <div class="col-md-6">
-                    <label for="apellido" class="form-label">
+
+                    <label
+                        for="apellido"
+                        class="form-label"
+                    >
                         Apellido
                     </label>
 
@@ -90,15 +140,24 @@
                     >
 
                     @error('apellido')
+
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>
+
                     @enderror
+
                 </div>
 
+
                 {{-- Correo --}}
+
                 <div class="col-md-6">
-                    <label for="email" class="form-label">
+
+                    <label
+                        for="email"
+                        class="form-label"
+                    >
                         Correo electrónico
                     </label>
 
@@ -112,17 +171,30 @@
                     >
 
                     @error('email')
+
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>
+
                     @enderror
+
                 </div>
 
+
                 {{-- Rol --}}
+
                 <div class="col-md-6">
-                    <label for="rol" class="form-label">
+
+                    <label
+                        for="rol"
+                        class="form-label"
+                    >
                         Rol
                     </label>
+
+                    @php
+                        $rolActual = old('rol', $usuario->rol);
+                    @endphp
 
                     <select
                         name="rol"
@@ -130,54 +202,73 @@
                         class="form-select @error('rol') is-invalid @enderror"
                         required
                     >
-                        <option value="">Seleccionar rol</option>
+
+                        <option value="">
+                            Seleccionar rol
+                        </option>
+
 
                         <option
                             value="administrador"
-                            {{ old('rol', $usuario->rol) === 'administrador' ? 'selected' : '' }}
+                            {{ $rolActual === 'administrador' ? 'selected' : '' }}
                         >
                             Administrador
                         </option>
 
+
                         <option
                             value="enfermero"
-                            {{ old('rol', $usuario->rol) === 'enfermero' ? 'selected' : '' }}
+                            {{ in_array($rolActual, ['enfermero', 'enfermeria']) ? 'selected' : '' }}
                         >
                             Enfermero
                         </option>
 
+
                         <option
-                            value="medico"
-                            {{ old('rol', $usuario->rol) === 'medico' ? 'selected' : '' }}
+                            value="doctor"
+                            {{ in_array($rolActual, ['doctor', 'medico']) ? 'selected' : '' }}
                         >
                             Médico
                         </option>
 
+
                         <option
                             value="personal"
-                            {{ old('rol', $usuario->rol) === 'personal' ? 'selected' : '' }}
+                            {{ $rolActual === 'personal' ? 'selected' : '' }}
                         >
                             Personal
                         </option>
 
+
                         <option
-                            value="usuario"
-                            {{ old('rol', $usuario->rol) === 'usuario' ? 'selected' : '' }}
+                            value="trabajo_social"
+                            {{ in_array($rolActual, ['trabajo_social', 'usuario']) ? 'selected' : '' }}
                         >
-                            Usuario
+                            Trabajo Social
                         </option>
+
                     </select>
 
+
                     @error('rol')
+
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>
+
                     @enderror
+
                 </div>
 
+
                 {{-- Estado --}}
+
                 <div class="col-md-6">
-                    <label for="estado" class="form-label">
+
+                    <label
+                        for="estado"
+                        class="form-label"
+                    >
                         Estado
                     </label>
 
@@ -187,6 +278,7 @@
                         class="form-select @error('estado') is-invalid @enderror"
                         required
                     >
+
                         <option
                             value="activo"
                             {{ old('estado', $usuario->estado) === 'activo' ? 'selected' : '' }}
@@ -194,33 +286,48 @@
                             Activo
                         </option>
 
+
                         <option
                             value="inactivo"
                             {{ old('estado', $usuario->estado) === 'inactivo' ? 'selected' : '' }}
                         >
                             Inactivo
                         </option>
+
                     </select>
 
+
                     @error('estado')
+
                         <div class="invalid-feedback">
                             {{ $message }}
                         </div>
+
                     @enderror
+
                 </div>
 
             </div>
 
+
             {{-- Información sobre contraseña --}}
+
             <div class="alert alert-info mt-4">
+
                 <i class="bi bi-info-circle"></i>
 
-                <strong>Contraseña:</strong>
+                <strong>
+                    Contraseña:
+                </strong>
+
                 la contraseña no se modifica desde esta sección.
                 El usuario conserva su contraseña actual.
+
             </div>
 
+
             {{-- Botones --}}
+
             <div class="d-flex justify-content-end gap-2 mt-4">
 
                 <a
@@ -230,7 +337,11 @@
                     Cancelar
                 </a>
 
-                <button type="submit" class="btn btn-primary">
+
+                <button
+                    type="submit"
+                    class="btn btn-primary"
+                >
                     <i class="bi bi-save"></i>
                     Guardar cambios
                 </button>
@@ -240,6 +351,7 @@
         </form>
 
     </div>
+
 </div>
 
 </div>

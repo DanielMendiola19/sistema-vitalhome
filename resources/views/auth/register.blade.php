@@ -356,19 +356,7 @@
                                     Médico
                                 </option>
 
-                                <option
-                                    value="personal"
-                                    {{ old('rol') == 'personal' ? 'selected' : '' }}
-                                >
-                                    Personal
-                                </option>
 
-                                <option
-                                    value="usuario"
-                                    {{ old('rol') == 'usuario' ? 'selected' : '' }}
-                                >
-                                    Usuario
-                                </option>
                             </select>
 
                         </div>

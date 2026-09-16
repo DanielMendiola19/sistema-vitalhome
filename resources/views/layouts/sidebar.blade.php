@@ -20,7 +20,11 @@
 
 <nav>
 
-    {{-- DASHBOARD --}}
+
+    {{-- =====================================================
+         DASHBOARD
+         TODOS
+         ===================================================== --}}
 
     <a
         href="{{ route('dashboard') }}"
@@ -36,7 +40,10 @@
     </a>
 
 
-    {{-- PACIENTES --}}
+    {{-- =====================================================
+         PACIENTES
+         TODOS
+         ===================================================== --}}
 
     <a
         href="{{ route('pacientes.index') }}"
@@ -52,9 +59,20 @@
     </a>
 
 
-    {{-- MEDICAMENTOS --}}
+    {{-- =====================================================
+         MEDICAMENTOS
+         ADMINISTRADOR / ENFERMERO
+         ===================================================== --}}
 
-    @if (Auth::user()->rol === 'administrador')
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'enfermero'
+            ]
+        )
+    )
 
         <a
             href="{{ route('medicamentos.index') }}"
@@ -72,45 +90,115 @@
     @endif
 
 
-    {{-- TRATAMIENTOS / KARDEX --}}
+    {{-- =====================================================
+         TRATAMIENTOS / KARDEX
+         ADMINISTRADOR / DOCTOR / ENFERMERO
+         ===================================================== --}}
 
-    <a
-        href="{{ route('tratamientos_kardex.lista') }}"
-        class="nav-link {{ request()->routeIs('tratamientos_kardex.*') ? 'active' : '' }}"
-    >
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'doctor',
+                'enfermero'
+            ]
+        )
+    )
 
-        <i class="bi bi-clipboard2"></i>
+        <a
+            href="{{ route('tratamientos_kardex.lista') }}"
+            class="nav-link {{ request()->routeIs('tratamientos_kardex.*') ? 'active' : '' }}"
+        >
 
-        <span>
-            Tratamientos/Kardex
-        </span>
+            <i class="bi bi-clipboard2"></i>
 
-    </a>
+            <span>
+                Tratamientos/Kardex
+            </span>
 
+        </a>
 
-    {{-- INVENTARIO --}}
-
-    <a
-        href="{{ route('inventario.index') }}"
-        class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"
-    >
-
-        <i class="bi bi-box-seam"></i>
-
-        <span>
-            Inventario
-        </span>
-
-    </a>
+    @endif
 
 
     {{-- =====================================================
-         OPCIONES SOLO ADMINISTRADOR
+         CITAS
+         ADMINISTRADOR / ENFERMERO / TRABAJO SOCIAL
          ===================================================== --}}
 
-    @if (Auth::user()->rol === 'administrador')
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'enfermero',
+                'trabajo_social'
+            ]
+        )
+    )
 
-        {{-- REPORTES --}}
+        <a
+            href="{{ route('citas.index') }}"
+            class="nav-link {{ request()->routeIs('citas.*') ? 'active' : '' }}"
+        >
+
+            <i class="bi bi-calendar-check"></i>
+
+            <span>
+                Citas
+            </span>
+
+        </a>
+
+    @endif
+
+
+    {{-- =====================================================
+         INVENTARIO
+         ADMINISTRADOR / ENFERMERO
+         ===================================================== --}}
+
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'enfermero'
+            ]
+        )
+    )
+
+        <a
+            href="{{ route('inventario.index') }}"
+            class="nav-link {{ request()->routeIs('inventario.*') ? 'active' : '' }}"
+        >
+
+            <i class="bi bi-box-seam"></i>
+
+            <span>
+                Inventario
+            </span>
+
+        </a>
+
+    @endif
+
+
+    {{-- =====================================================
+         REPORTES
+         ADMINISTRADOR / ENFERMERO
+         ===================================================== --}}
+
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'enfermero'
+            ]
+        )
+    )
 
         <a
             href="{{ route('reportes.index') }}"
@@ -125,8 +213,15 @@
 
         </a>
 
+    @endif
 
-        {{-- USUARIOS --}}
+
+    {{-- =====================================================
+         USUARIOS
+         EXCLUSIVAMENTE ADMINISTRADOR
+         ===================================================== --}}
+
+    @if(Auth::user()->rol === 'administrador')
 
         <a
             href="{{ route('usuarios.index') }}"
@@ -141,8 +236,23 @@
 
         </a>
 
+    @endif
 
-        {{-- CONFIGURACIÓN --}}
+
+    {{-- =====================================================
+         CONFIGURACIÓN
+         ADMINISTRADOR / ENFERMERO
+         ===================================================== --}}
+
+    @if(
+        in_array(
+            Auth::user()->rol,
+            [
+                'administrador',
+                'enfermero'
+            ]
+        )
+    )
 
         <a
             href="#"
@@ -188,9 +298,44 @@
 
             </div>
 
+
             <small class="text-secondary-vital">
 
-                {{ ucfirst(Auth::user()->rol) }}
+                @switch(Auth::user()->rol)
+
+                    @case('administrador')
+
+                        Administrador
+
+                        @break
+
+
+                    @case('doctor')
+
+                        Doctor
+
+                        @break
+
+
+                    @case('enfermero')
+
+                        Enfermero
+
+                        @break
+
+
+                    @case('trabajo_social')
+
+                        Trabajo Social
+
+                        @break
+
+
+                    @default
+
+                        {{ ucfirst(Auth::user()->rol) }}
+
+                @endswitch
 
             </small>
 
@@ -199,7 +344,9 @@
     </div>
 
 
-    {{-- CERRAR SESIÓN --}}
+    {{-- =====================================================
+         CERRAR SESIÓN
+         ===================================================== --}}
 
     <form
         action="{{ route('logout') }}"

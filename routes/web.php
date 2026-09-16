@@ -11,7 +11,14 @@ use App\Http\Controllers\UsuarioController;
 use App\Http\Controllers\MedicamentoController;
 use App\Http\Controllers\TratamientoKardexController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\CitaController;
 
+
+/*
+|--------------------------------------------------------------------------
+| INICIO
+|--------------------------------------------------------------------------
+*/
 
 Route::get('/', function () {
 
@@ -21,6 +28,12 @@ Route::get('/', function () {
 
 });
 
+
+/*
+|--------------------------------------------------------------------------
+| LOGIN
+|--------------------------------------------------------------------------
+*/
 
 Route::get(
     '/login',
@@ -33,6 +46,12 @@ Route::post(
     [AuthController::class, 'login']
 );
 
+
+/*
+|--------------------------------------------------------------------------
+| RECUPERAR CONTRASEÑA
+|--------------------------------------------------------------------------
+*/
 
 Route::get(
     '/recuperar-password',
@@ -51,6 +70,12 @@ Route::post(
     ]
 )->name('password.email');
 
+
+/*
+|--------------------------------------------------------------------------
+| LOGOUT
+|--------------------------------------------------------------------------
+*/
 
 Route::post(
     '/logout',
@@ -92,6 +117,7 @@ Route::middleware([
 
 // ======================================================
 // DASHBOARD
+// TODOS LOS ROLES DEL SISTEMA
 // ======================================================
 
 Route::get(
@@ -101,22 +127,25 @@ Route::get(
     ->middleware([
         'auth',
         'inactivity',
-        'must.change.password'
+        'must.change.password',
+        'role:administrador,doctor,enfermero,trabajo_social'
     ])
     ->name('dashboard');
 
 
 // ======================================================
-// USUARIOS - SOLO ADMINISTRADOR
+// USUARIOS
+// SOLO ADMINISTRADOR
 // ======================================================
 
 Route::middleware([
     'auth',
     'inactivity',
-    'admin'
+    'must.change.password',
+    'role:administrador'
 ])->group(function () {
 
-    // Listado de usuarios
+    // Listado
     Route::get(
         '/usuarios',
         [
@@ -126,7 +155,7 @@ Route::middleware([
     )->name('usuarios.index');
 
 
-    // Formulario para registrar usuario
+    // Formulario crear
     Route::get(
         '/usuarios/crear',
         [
@@ -136,7 +165,7 @@ Route::middleware([
     )->name('usuarios.create');
 
 
-    // Guardar nuevo usuario
+    // Guardar
     Route::post(
         '/usuarios',
         [
@@ -146,7 +175,7 @@ Route::middleware([
     )->name('usuarios.store');
 
 
-    // Formulario para editar usuario
+    // Editar
     Route::get(
         '/usuarios/{id}/editar',
         [
@@ -156,7 +185,7 @@ Route::middleware([
     )->name('usuarios.edit');
 
 
-    // Actualizar usuario
+    // Actualizar
     Route::put(
         '/usuarios/{id}',
         [
@@ -166,6 +195,7 @@ Route::middleware([
     )->name('usuarios.update');
 
 
+    // Cambiar estado
     Route::patch(
         '/usuarios/{id}/estado',
         [
@@ -185,6 +215,7 @@ Route::middleware([
     )->name('usuarios.destroy');
 
 
+    // Papelera
     Route::get(
         '/usuarios/papelera',
         [
@@ -194,6 +225,7 @@ Route::middleware([
     )->name('usuarios.papelera');
 
 
+    // Restaurar
     Route::patch(
         '/usuarios/{id}/restaurar',
         [
@@ -207,12 +239,15 @@ Route::middleware([
 
 // ======================================================
 // PACIENTES
+// LECTURA:
+// ADMINISTRADOR / DOCTOR / ENFERMERO / TRABAJO SOCIAL
 // ======================================================
 
 Route::middleware([
     'auth',
     'inactivity',
-    'must.change.password'
+    'must.change.password',
+    'role:administrador,doctor,enfermero,trabajo_social'
 ])->group(function () {
 
     // Listado
@@ -222,18 +257,35 @@ Route::middleware([
     )->name('pacientes.index');
 
 
-    // Crear
-    Route::post(
-        '/pacientes',
-        [PacienteController::class, 'store']
-    )->name('pacientes.store');
-
-
     // Ver detalle
     Route::get(
         '/pacientes/{id}',
         [PacienteController::class, 'show']
     )->name('pacientes.show');
+
+});
+
+
+// ======================================================
+// PACIENTES
+// MODIFICACIÓN:
+// ADMINISTRADOR / DOCTOR / ENFERMERO
+//
+// TRABAJO SOCIAL NO PUEDE MODIFICAR
+// ======================================================
+
+Route::middleware([
+    'auth',
+    'inactivity',
+    'must.change.password',
+    'role:administrador,doctor,enfermero'
+])->group(function () {
+
+    // Crear
+    Route::post(
+        '/pacientes',
+        [PacienteController::class, 'store']
+    )->name('pacientes.store');
 
 
     // Actualizar
@@ -261,12 +313,14 @@ Route::middleware([
 
 // ======================================================
 // INVENTARIO
+// ADMINISTRADOR Y ENFERMERO
 // ======================================================
 
 Route::middleware([
     'auth',
     'inactivity',
-    'must.change.password'
+    'must.change.password',
+    'role:administrador,enfermero'
 ])->group(function () {
 
     // Inventario general
@@ -279,7 +333,7 @@ Route::middleware([
     )->name('inventario.index');
 
 
-    // Inventario por paciente
+    // Inventario por pacientes
     Route::get(
         '/inventario/pacientes',
         [
@@ -299,7 +353,7 @@ Route::middleware([
     )->name('inventario.paciente');
 
 
-    // Detalle de medicamento
+    // Detalle
     Route::get(
         '/inventario/detalle/{inventario}',
         [
@@ -309,6 +363,7 @@ Route::middleware([
     )->name('inventario.detalle');
 
 
+    // Actualizar inventario
     Route::put(
         '/inventario/{inventario}',
         [
@@ -318,7 +373,7 @@ Route::middleware([
     )->name('inventario.actualizar');
 
 
-    // Movimientos
+    // Entrada
     Route::post(
         '/inventario/entrada',
         [
@@ -328,6 +383,7 @@ Route::middleware([
     )->name('inventario.entrada');
 
 
+    // Salida
     Route::post(
         '/inventario/salida',
         [
@@ -337,6 +393,7 @@ Route::middleware([
     )->name('inventario.salida');
 
 
+    // Transferencia
     Route::post(
         '/inventario/transferir',
         [
@@ -346,6 +403,7 @@ Route::middleware([
     )->name('inventario.transferir');
 
 
+    // Salida de inventario de paciente
     Route::post(
         '/inventario/paciente/{inventarioPaciente}/salida',
         [
@@ -355,6 +413,7 @@ Route::middleware([
     )->name('inventario.paciente.salida');
 
 
+    // Registrar medicamento para paciente
     Route::post(
         '/inventario/paciente/registrar',
         [
@@ -363,10 +422,20 @@ Route::middleware([
         ]
     )->name('inventario.paciente.registrar');
 
+});
 
-    // ======================================================
-    // MEDICAMENTOS
-    // ======================================================
+
+// ======================================================
+// MEDICAMENTOS
+// ADMINISTRADOR Y ENFERMERO
+// ======================================================
+
+Route::middleware([
+    'auth',
+    'inactivity',
+    'must.change.password',
+    'role:administrador,enfermero'
+])->group(function () {
 
     Route::get(
         '/medicamentos',
@@ -417,22 +486,24 @@ Route::middleware([
 
 // ==========================================================
 // TRATAMIENTOS / KARDEX
+// ADMINISTRADOR / DOCTOR / ENFERMERO
 // ==========================================================
 
 Route::middleware([
     'auth',
     'inactivity',
-    'must.change.password'
+    'must.change.password',
+    'role:administrador,doctor,enfermero'
 ])->group(function () {
 
-    // Lista general de pacientes para Tratamientos / Kardex
+    // Lista general
     Route::get(
         '/tratamientos-kardex',
         [TratamientoKardexController::class, 'indexGeneral']
     )->name('tratamientos_kardex.lista');
 
 
-    // Kardex de un paciente específico
+    // Kardex de paciente
     Route::get(
         '/pacientes/{paciente}/tratamientos-kardex',
         [TratamientoKardexController::class, 'index']
@@ -453,7 +524,7 @@ Route::middleware([
     )->name('tratamientos_kardex.update');
 
 
-    // Actualizar diagnóstico del paciente
+    // Diagnóstico
     Route::patch(
         '/pacientes/{paciente}/tratamientos-kardex/diagnostico',
         [TratamientoKardexController::class, 'actualizarDiagnostico']
@@ -470,14 +541,87 @@ Route::middleware([
 
 
 // ==========================================================
-// REPORTES - SOLO ADMINISTRADOR
+// CITAS
+// ADMINISTRADOR / ENFERMERO / TRABAJO SOCIAL
+//
+// DOCTOR NO PUEDE ACCEDER
 // ==========================================================
 
 Route::middleware([
     'auth',
     'inactivity',
     'must.change.password',
-    'admin'
+    'role:administrador,enfermero,trabajo_social'
+])->group(function () {
+
+    // Listado
+    Route::get(
+        '/citas',
+        [CitaController::class, 'index']
+    )->name('citas.index');
+
+
+    // Crear
+    Route::get(
+        '/citas/crear',
+        [CitaController::class, 'create']
+    )->name('citas.create');
+
+
+    // Guardar
+    Route::post(
+        '/citas',
+        [CitaController::class, 'store']
+    )->name('citas.store');
+
+
+    // Editar
+    Route::get(
+        '/citas/{cita}/editar',
+        [CitaController::class, 'edit']
+    )->name('citas.edit');
+
+
+    // Actualizar
+    Route::put(
+        '/citas/{cita}',
+        [CitaController::class, 'update']
+    )->name('citas.update');
+
+
+    // Completar
+    Route::patch(
+        '/citas/{cita}/completar',
+        [CitaController::class, 'completar']
+    )->name('citas.completar');
+
+
+    // Cancelar
+    Route::patch(
+        '/citas/{cita}/cancelar',
+        [CitaController::class, 'cancelar']
+    )->name('citas.cancelar');
+
+
+    // Reactivar
+    Route::patch(
+        '/citas/{cita}/reactivar',
+        [CitaController::class, 'reactivar']
+    )->name('citas.reactivar');
+
+});
+
+
+// ==========================================================
+// REPORTES
+// ADMINISTRADOR Y ENFERMERO
+// ==========================================================
+
+Route::middleware([
+    'auth',
+    'inactivity',
+    'must.change.password',
+    'role:administrador,enfermero'
 ])->group(function () {
 
     Route::get(
@@ -498,11 +642,6 @@ Route::middleware([
     )->name('reportes.informacion_general');
 
 
-    /*
-     * PDF de Información General
-     *
-     * ESTA ES LA ÚNICA RUTA NUEVA QUE NECESITÁBAMOS AGREGAR.
-     */
     Route::get(
         '/reportes/pacientes/{paciente}/informacion-general/pdf',
         [ReporteController::class, 'informacionGeneralPdf']
@@ -513,10 +652,12 @@ Route::middleware([
         '/reportes/pacientes/{paciente}/kardex',
         [ReporteController::class, 'kardex']
     )->name('reportes.kardex');
+
+
     Route::get(
-    '/reportes/pacientes/{paciente}/kardex/pdf',
-    [ReporteController::class, 'kardexPdf']
-)->name('reportes.kardex.pdf');
+        '/reportes/pacientes/{paciente}/kardex/pdf',
+        [ReporteController::class, 'kardexPdf']
+    )->name('reportes.kardex.pdf');
 
 
     Route::get(
@@ -536,20 +677,22 @@ Route::middleware([
         [ReporteController::class, 'general']
     )->name('reportes.general');
 
+
     Route::get(
-    '/reportes/pacientes/{paciente}/historia-clinica/pdf',
-    [ReporteController::class, 'historiaClinicaPdf']
-)->name('reportes.historia_clinica.pdf');
+        '/reportes/pacientes/{paciente}/historia-clinica/pdf',
+        [ReporteController::class, 'historiaClinicaPdf']
+    )->name('reportes.historia_clinica.pdf');
 
 
-Route::get(
-    '/reportes/pacientes/{paciente}/signos-vitales/pdf',
-    [ReporteController::class, 'signosVitalesPdf']
-)->name('reportes.signos_vitales.pdf');
+    Route::get(
+        '/reportes/pacientes/{paciente}/signos-vitales/pdf',
+        [ReporteController::class, 'signosVitalesPdf']
+    )->name('reportes.signos_vitales.pdf');
 
 
-Route::get(
-    '/reportes/pacientes/{paciente}/general/pdf',
-    [ReporteController::class, 'generalPdf']
-)->name('reportes.general.pdf');
+    Route::get(
+        '/reportes/pacientes/{paciente}/general/pdf',
+        [ReporteController::class, 'generalPdf']
+    )->name('reportes.general.pdf');
+
 });

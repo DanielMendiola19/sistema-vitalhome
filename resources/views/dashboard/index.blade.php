@@ -48,12 +48,15 @@
             @endphp
 
             @if($totalAlertas > 0)
+
                 <span
                     class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger"
                 >
                     {{ $totalAlertas }}
                 </span>
+
             @endif
+
         </button>
 
     </div>
@@ -243,13 +246,21 @@
 
                         </div>
 
-                        <a
-                            href="{{ route('inventario.index') }}"
-                            class="text-decoration-none"
-                            style="color:#388E3C;"
-                        >
-                            Ver inventario →
-                        </a>
+
+                        {{-- DOCTOR PUEDE VER LA INFORMACIÓN,
+                             PERO NO ENTRAR AL INVENTARIO --}}
+
+                        @if(Auth::user()->rol !== 'doctor')
+
+                            <a
+                                href="{{ route('inventario.index') }}"
+                                class="text-decoration-none"
+                                style="color:#388E3C;"
+                            >
+                                Ver inventario →
+                            </a>
+
+                        @endif
 
                     </div>
 
@@ -407,8 +418,6 @@
 
                             <div class="d-flex mb-4">
 
-                                {{-- ICONO --}}
-
                                 <div
                                     class="me-3 {{ $configuracion['clase'] }}"
                                 >
@@ -418,11 +427,7 @@
                                 </div>
 
 
-                                {{-- INFORMACIÓN --}}
-
                                 <div class="flex-grow-1">
-
-                                    {{-- ACCIÓN --}}
 
                                     <div class="small fw-semibold">
 
@@ -441,8 +446,6 @@
                                     </div>
 
 
-                                    {{-- PACIENTE --}}
-
                                     @if($movimiento->paciente_nombre)
 
                                         <div class="small text-secondary-vital mt-1">
@@ -459,8 +462,6 @@
 
                                     @endif
 
-
-                                    {{-- USUARIO --}}
 
                                     @if($movimiento->usuario_nombre)
 
@@ -480,8 +481,6 @@
 
                                     @endif
 
-
-                                    {{-- FECHA --}}
 
                                     <div class="small text-secondary-vital mt-1">
 
@@ -882,16 +881,24 @@
 
             <div class="modal-footer border-0">
 
-                <a
-                    href="{{ route('inventario.index') }}"
-                    class="btn btn-success"
-                >
 
-                    <i class="bi bi-box-seam me-1"></i>
+                {{-- DOCTOR NO PUEDE ENTRAR A INVENTARIO --}}
 
-                    Ir al inventario
+                @if(Auth::user()->rol !== 'doctor')
 
-                </a>
+                    <a
+                        href="{{ route('inventario.index') }}"
+                        class="btn btn-success"
+                    >
+
+                        <i class="bi bi-box-seam me-1"></i>
+
+                        Ir al inventario
+
+                    </a>
+
+                @endif
+
 
                 <button
                     type="button"

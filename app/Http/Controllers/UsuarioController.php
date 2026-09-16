@@ -23,7 +23,9 @@ class UsuarioController extends Controller
     }
 
 
-
+    /**
+     * Mostrar papelera de usuarios.
+     */
     public function papelera()
     {
         $usuarios = User::onlyTrashed()
@@ -33,6 +35,10 @@ class UsuarioController extends Controller
         return view('usuarios.papelera', compact('usuarios'));
     }
 
+
+    /**
+     * Restaurar usuario eliminado.
+     */
     public function restaurar(string $id)
     {
         $usuario = User::onlyTrashed()->findOrFail($id);
@@ -47,6 +53,7 @@ class UsuarioController extends Controller
             );
     }
 
+
     /**
      * Mostrar formulario para crear un nuevo usuario.
      */
@@ -55,18 +62,29 @@ class UsuarioController extends Controller
         return view('usuarios.create');
     }
 
+
     /**
      * Guardar nuevo usuario.
      */
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'apellido' => ['required', 'string', 'max:100'],
+
+            'nombre' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'apellido' => [
+                'required',
+                'string',
+                'max:100'
+            ],
 
             'rol' => [
                 'required',
-                'in:administrador,enfermero,medico,personal,usuario',
+                'in:administrador,enfermero,doctor,personal,trabajo_social',
             ],
 
             'email' => [
@@ -75,21 +93,33 @@ class UsuarioController extends Controller
                 'max:150',
                 'unique:users,email',
             ],
+
         ]);
+
 
         // Generar contraseña temporal
         $passwordTemporal = Str::random(12);
 
+
         // Crear usuario
         $usuario = User::create([
+
             'nombre' => $validated['nombre'],
+
             'apellido' => $validated['apellido'],
+
             'rol' => $validated['rol'],
+
             'email' => $validated['email'],
+
             'password' => $passwordTemporal,
+
             'estado' => 'activo',
+
             'debe_cambiar_password' => true,
+
         ]);
+
 
         // Enviar correo con los datos de acceso
         Mail::to($usuario->email)
@@ -101,6 +131,7 @@ class UsuarioController extends Controller
                 )
             );
 
+
         return redirect()
             ->route('usuarios.index')
             ->with(
@@ -108,6 +139,8 @@ class UsuarioController extends Controller
                 'Usuario registrado correctamente. Se enviaron sus datos de acceso al correo electrónico.'
             );
     }
+
+
     /**
      * Mostrar usuario.
      */
@@ -116,6 +149,7 @@ class UsuarioController extends Controller
         //
     }
 
+
     /**
      * Mostrar formulario para editar usuario.
      */
@@ -123,20 +157,40 @@ class UsuarioController extends Controller
     {
         $usuario = User::findOrFail($id);
 
-        return view('usuarios.edit', compact('usuario'));
+        return view(
+            'usuarios.edit',
+            compact('usuario')
+        );
     }
 
-    public function update(Request $request, string $id)
-    {
+
+    /**
+     * Actualizar usuario.
+     */
+    public function update(
+        Request $request,
+        string $id
+    ) {
         $usuario = User::findOrFail($id);
 
+
         $validated = $request->validate([
-            'nombre' => ['required', 'string', 'max:100'],
-            'apellido' => ['required', 'string', 'max:100'],
+
+            'nombre' => [
+                'required',
+                'string',
+                'max:100'
+            ],
+
+            'apellido' => [
+                'required',
+                'string',
+                'max:100'
+            ],
 
             'rol' => [
                 'required',
-                'in:administrador,enfermero,medico,personal,usuario',
+                'in:administrador,enfermero,doctor,personal,trabajo_social',
             ],
 
             'email' => [
@@ -150,9 +204,12 @@ class UsuarioController extends Controller
                 'required',
                 'in:activo,inactivo',
             ],
+
         ]);
 
+
         $usuario->update($validated);
+
 
         return redirect()
             ->route('usuarios.index')
@@ -163,15 +220,22 @@ class UsuarioController extends Controller
     }
 
 
+    /**
+     * Cambiar estado del usuario.
+     */
     public function cambiarEstado(string $id)
     {
         $usuario = User::findOrFail($id);
 
-        $usuario->estado = $usuario->estado === 'activo'
-            ? 'inactivo'
-            : 'activo';
+
+        $usuario->estado =
+            $usuario->estado === 'activo'
+                ? 'inactivo'
+                : 'activo';
+
 
         $usuario->save();
+
 
         return redirect()
             ->route('usuarios.index')
@@ -180,6 +244,8 @@ class UsuarioController extends Controller
                 'El estado del usuario fue actualizado correctamente.'
             );
     }
+
+
     /**
      * Eliminación lógica del usuario.
      */
@@ -187,8 +253,10 @@ class UsuarioController extends Controller
     {
         $usuario = User::findOrFail($id);
 
+
         // Evitar que el administrador elimine su propia cuenta
         if ($usuario->id === auth()->id()) {
+
             return redirect()
                 ->route('usuarios.index')
                 ->with(
@@ -197,8 +265,10 @@ class UsuarioController extends Controller
                 );
         }
 
+
         // Eliminación lógica
         $usuario->delete();
+
 
         return redirect()
             ->route('usuarios.index')

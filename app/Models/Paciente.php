@@ -97,4 +97,15 @@ class Paciente extends Model
             'paciente_id'
         );
     }
+
+    /**
+     * Citas del paciente.
+     */
+    public function citas(): HasMany
+    {
+        return $this->hasMany(
+            Cita::class,
+            'paciente_id'
+        );
+    }
 }

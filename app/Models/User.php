@@ -4,11 +4,10 @@ namespace App\Models;
 
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use App\Models\MovimientoInventario;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
 
 class User extends Authenticatable
 {
@@ -36,11 +35,26 @@ class User extends Authenticatable
             'debe_cambiar_password' => 'boolean',
         ];
     }
-    public function movimientosInventario()
+
+    /**
+     * Movimientos de inventario realizados por el usuario.
+     */
+    public function movimientosInventario(): HasMany
     {
         return $this->hasMany(
             MovimientoInventario::class,
             'usuario_id'
+        );
+    }
+
+    /**
+     * Citas registradas por el usuario.
+     */
+    public function citasCreadas(): HasMany
+    {
+        return $this->hasMany(
+            Cita::class,
+            'creado_por'
         );
     }
 }

@@ -130,14 +130,27 @@
                                 );
 
                             $rol = match ($usuario->rol) {
-                                'administrador' => 'Administrador',
-                                'enfermero' => 'Enfermero',
-                                'enfermeria' => 'Enfermería',
-                                'medico' => 'Médico',
-                                'personal' => 'Personal',
-                                'usuario' => 'Usuario',
-                                default => ucfirst($usuario->rol),
-                            };
+
+    'administrador' => 'Administrador',
+
+    'enfermero' => 'Enfermero',
+
+    'enfermeria' => 'Enfermero',
+
+    'doctor' => 'Médico',
+
+    'medico' => 'Médico',
+
+    'personal' => 'Personal',
+
+    'trabajo_social' => 'Trabajo Social',
+
+    'usuario' => 'Trabajo Social',
+
+    default => ucfirst(
+        str_replace('_', ' ', $usuario->rol)
+    ),
+};
                         @endphp
 
                         <tr>

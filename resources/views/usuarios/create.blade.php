@@ -153,9 +153,14 @@
                             required
                         >
 
-                            <option value="" disabled {{ old('rol') ? '' : 'selected' }}>
+                            <option
+                                value=""
+                                disabled
+                                {{ old('rol') ? '' : 'selected' }}
+                            >
                                 Selecciona un rol
                             </option>
+
 
                             <option
                                 value="administrador"
@@ -164,6 +169,7 @@
                                 Administrador
                             </option>
 
+
                             <option
                                 value="enfermero"
                                 {{ old('rol') === 'enfermero' ? 'selected' : '' }}
@@ -171,12 +177,14 @@
                                 Enfermero
                             </option>
 
+
                             <option
-                                value="medico"
-                                {{ old('rol') === 'medico' ? 'selected' : '' }}
+                                value="doctor"
+                                {{ old('rol') === 'doctor' ? 'selected' : '' }}
                             >
                                 Médico
                             </option>
+
 
                             <option
                                 value="personal"
@@ -185,19 +193,23 @@
                                 Personal
                             </option>
 
+
                             <option
-                                value="usuario"
-                                {{ old('rol') === 'usuario' ? 'selected' : '' }}
+                                value="trabajo_social"
+                                {{ old('rol') === 'trabajo_social' ? 'selected' : '' }}
                             >
-                                Usuario
+                                Trabajo Social
                             </option>
 
                         </select>
 
+
                         @error('rol')
+
                             <div class="invalid-feedback">
                                 {{ $message }}
                             </div>
+
                         @enderror
 
                     </div>
