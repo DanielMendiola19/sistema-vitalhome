@@ -19,6 +19,25 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
 
+        /*
+        |--------------------------------------------------------------------------
+        | TRUSTED PROXIES
+        |--------------------------------------------------------------------------
+        |
+        | Render termina la conexión HTTPS antes de enviar la petición
+        | al contenedor. Laravel debe confiar en los encabezados del proxy
+        | para reconocer correctamente que la petición original usa HTTPS.
+        |
+        */
+
+        $middleware->trustProxies(at: '*');
+
+        /*
+        |--------------------------------------------------------------------------
+        | ALIAS DE MIDDLEWARE
+        |--------------------------------------------------------------------------
+        */
+
         $middleware->alias([
 
             'inactivity' => CheckInactivity::class,
