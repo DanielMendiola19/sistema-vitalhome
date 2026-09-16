@@ -510,7 +510,7 @@
                             </th>
 
                             <th>
-                                ESTADO
+                                RESIDENCIA
                             </th>
 
                             <th>
@@ -534,15 +534,9 @@
                         @foreach($pacientes as $paciente)
 
                             @php
-
-                                $tieneTratamientosActivos =
-                                    $paciente->tratamientos->count() > 0;
-
-                                $edad =
-                                    $paciente->fecha_nacimiento
-                                        ? $paciente->fecha_nacimiento->age
-                                        : null;
-
+                                $edad = $paciente->fecha_nacimiento
+                                    ? $paciente->fecha_nacimiento->age
+                                    : null;
                             @endphp
 
                             <tr>
@@ -599,7 +593,7 @@
                                 {{-- ESTADO --}}
                                 <td>
 
-                                    @if($tieneTratamientosActivos)
+                                    @if($paciente->estado === 'activo')
 
                                         <span class="status-badge status-active">
                                             Activo
@@ -964,6 +958,147 @@
                         </div>
 
 
+                        {{-- SEGURO --}}
+                        <div class="col-md-6">
+                            <label for="tiene_seguro" class="form-label-custom">
+                                ¿Cuenta con seguro?
+                            </label>
+
+                            <select
+                                id="tiene_seguro"
+                                name="tiene_seguro"
+                                class="form-select form-control-custom @error('tiene_seguro') is-invalid @enderror"
+                                required
+                            >
+                                <option value="0" {{ old('tiene_seguro', '0') === '0' ? 'selected' : '' }}>
+                                    No
+                                </option>
+                                <option value="1" {{ old('tiene_seguro') === '1' ? 'selected' : '' }}>
+                                    Sí
+                                </option>
+                            </select>
+
+                            @error('tiene_seguro')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- ESTADO --}}
+                        <div class="col-md-6">
+                            <label for="estado_paciente" class="form-label-custom">
+                                Estado
+                            </label>
+
+                            <select
+                                id="estado_paciente"
+                                name="estado"
+                                class="form-select form-control-custom @error('estado') is-invalid @enderror"
+                                required
+                            >
+                                <option value="activo" {{ old('estado', 'activo') === 'activo' ? 'selected' : '' }}>
+                                    Activo - Reside en VITALHOME
+                                </option>
+                                <option value="inactivo" {{ old('estado') === 'inactivo' ? 'selected' : '' }}>
+                                    Inactivo
+                                </option>
+                            </select>
+
+                            @error('estado')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- ESPECIFICAR SEGURO --}}
+                        <div
+                            class="col-12"
+                            id="seguroDetalleContainer"
+                            style="display:none;"
+                        >
+                            <label for="seguro" class="form-label-custom">
+                                ¿A qué seguro pertenece?
+                            </label>
+
+                            <input
+                                type="text"
+                                id="seguro"
+                                name="seguro"
+                                value="{{ old('seguro') }}"
+                                class="form-control form-control-custom @error('seguro') is-invalid @enderror"
+                                placeholder="Ej. Caja Nacional de Salud"
+                            >
+
+                            @error('seguro')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- MOTIVO INACTIVIDAD --}}
+                        <div
+                            class="col-12"
+                            id="motivoInactividadContainer"
+                            style="display:none;"
+                        >
+                            <label for="motivo_inactividad" class="form-label-custom">
+                                Motivo de inactividad
+                            </label>
+
+                            <select
+                                id="motivo_inactividad"
+                                name="motivo_inactividad"
+                                class="form-select form-control-custom @error('motivo_inactividad') is-invalid @enderror"
+                            >
+                                <option value="">Seleccionar</option>
+                                <option value="retiro" {{ old('motivo_inactividad') === 'retiro' ? 'selected' : '' }}>
+                                    Ya no reside en VITALHOME
+                                </option>
+                                <option value="fallecimiento" {{ old('motivo_inactividad') === 'fallecimiento' ? 'selected' : '' }}>
+                                    Falleció
+                                </option>
+                            </select>
+
+                            @error('motivo_inactividad')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- ESPECIALIDADES --}}
+                        <div class="col-12">
+                            <label for="especialidades" class="form-label-custom">
+                                Especialidades a las que acude
+                            </label>
+
+                            <textarea
+                                id="especialidades"
+                                name="especialidades"
+                                rows="2"
+                                class="form-control form-control-custom @error('especialidades') is-invalid @enderror"
+                                placeholder="Ej. Cardiología, Neurología, Traumatología"
+                            >{{ old('especialidades') }}</textarea>
+
+                            @error('especialidades')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
+                        {{-- MEDICAMENTOS DE INGRESO --}}
+                        <div class="col-12">
+                            <label for="medicamentos_ingreso" class="form-label-custom">
+                                Medicamentos con los que ingresa
+                            </label>
+
+                            <textarea
+                                id="medicamentos_ingreso"
+                                name="medicamentos_ingreso"
+                                rows="3"
+                                class="form-control form-control-custom @error('medicamentos_ingreso') is-invalid @enderror"
+                                placeholder="Registra los medicamentos con los que llega el paciente, dosis o indicaciones si corresponde."
+                            >{{ old('medicamentos_ingreso') }}</textarea>
+
+                            @error('medicamentos_ingreso')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         {{-- OBSERVACIONES --}}
                         <div class="col-12">
 
@@ -1023,6 +1158,65 @@
     </div>
 
 </div>
+
+
+{{-- ====================================================== --}}
+{{-- CAMPOS CONDICIONALES DEL REGISTRO --}}
+{{-- ====================================================== --}}
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const tieneSeguro = document.getElementById('tiene_seguro');
+    const seguroContainer = document.getElementById('seguroDetalleContainer');
+    const seguroInput = document.getElementById('seguro');
+
+    const estadoPaciente = document.getElementById('estado_paciente');
+    const motivoContainer = document.getElementById('motivoInactividadContainer');
+    const motivoSelect = document.getElementById('motivo_inactividad');
+
+    function actualizarSeguro() {
+        const mostrar = tieneSeguro && tieneSeguro.value === '1';
+
+        if (seguroContainer) {
+            seguroContainer.style.display = mostrar ? '' : 'none';
+        }
+
+        if (seguroInput) {
+            seguroInput.required = mostrar;
+
+            if (!mostrar) {
+                seguroInput.value = '';
+            }
+        }
+    }
+
+    function actualizarEstado() {
+        const mostrar = estadoPaciente && estadoPaciente.value === 'inactivo';
+
+        if (motivoContainer) {
+            motivoContainer.style.display = mostrar ? '' : 'none';
+        }
+
+        if (motivoSelect) {
+            motivoSelect.required = mostrar;
+
+            if (!mostrar) {
+                motivoSelect.value = '';
+            }
+        }
+    }
+
+    if (tieneSeguro) {
+        tieneSeguro.addEventListener('change', actualizarSeguro);
+        actualizarSeguro();
+    }
+
+    if (estadoPaciente) {
+        estadoPaciente.addEventListener('change', actualizarEstado);
+        actualizarEstado();
+    }
+});
+</script>
 
 
 {{-- ====================================================== --}}

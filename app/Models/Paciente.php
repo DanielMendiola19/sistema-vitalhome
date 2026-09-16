@@ -19,10 +19,17 @@ class Paciente extends Model
         'direccion',
         'observaciones',
         'diagnostico',
+        'tiene_seguro',
+        'seguro',
+        'especialidades',
+        'medicamentos_ingreso',
+        'estado',
+        'motivo_inactividad',
     ];
 
     protected $casts = [
         'fecha_nacimiento' => 'date',
+        'tiene_seguro' => 'boolean',
     ];
 
     /**

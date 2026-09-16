@@ -977,7 +977,7 @@
 
                 <div class="summary-value">
 
-                    @if($paciente->tratamientos->where('estado', 'activo')->count())
+                    @if($paciente->estado === 'activo')
 
                         <span class="summary-status">
                             Activo
@@ -1193,6 +1193,49 @@
                     <div class="basic-row">
 
                         <span class="basic-label">
+                            Seguro
+                        </span>
+
+                        <span class="basic-value">
+                            {{ $paciente->tiene_seguro ? ($paciente->seguro ?: 'Sí, sin especificar') : 'No cuenta con seguro' }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="basic-row">
+
+                        <span class="basic-label">
+                            Especialidades
+                        </span>
+
+                        <span class="basic-value">
+                            {{ $paciente->especialidades ?: 'No registradas' }}
+                        </span>
+
+                    </div>
+
+
+                    <div class="basic-row">
+
+                        <span class="basic-label">
+                            Estado de residencia
+                        </span>
+
+                        <span class="basic-value">
+                            {{ $paciente->estado === 'activo' ? 'Activo - Reside en VITALHOME' : 'Inactivo' }}
+
+                            @if($paciente->estado === 'inactivo' && $paciente->motivo_inactividad)
+                                · {{ $paciente->motivo_inactividad === 'fallecimiento' ? 'Falleció' : 'Ya no reside en VITALHOME' }}
+                            @endif
+                        </span>
+
+                    </div>
+
+
+                    <div class="basic-row">
+
+                        <span class="basic-label">
                             Última actualización
                         </span>
 
@@ -1236,6 +1279,15 @@
 
 
                     <div class="antecedents">
+
+                        <div class="antecedent-box mb-3">
+                            <div class="fw-bold mb-2" style="color:#0f2d6b;">
+                                <i class="bi bi-capsule me-1"></i>
+                                Medicamentos con los que ingresó
+                            </div>
+
+                            {{ $paciente->medicamentos_ingreso ?: 'No se registraron medicamentos de ingreso.' }}
+                        </div>
 
                         @if($paciente->observaciones)
 
@@ -2556,6 +2608,145 @@
                         </div>
 
 
+                        {{-- SEGURO --}}
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                ¿Cuenta con seguro?
+                            </label>
+
+                            <select
+                                name="tiene_seguro"
+                                id="editar_tiene_seguro"
+                                class="form-select"
+                                required
+                            >
+                                <option value="0" {{ !$paciente->tiene_seguro ? 'selected' : '' }}>
+                                    No
+                                </option>
+                                <option value="1" {{ $paciente->tiene_seguro ? 'selected' : '' }}>
+                                    Sí
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        {{-- ESTADO --}}
+
+                        <div class="col-md-6">
+
+                            <label class="form-label fw-semibold">
+                                Estado
+                            </label>
+
+                            <select
+                                name="estado"
+                                id="editar_estado_paciente"
+                                class="form-select"
+                                required
+                            >
+                                <option value="activo" {{ $paciente->estado === 'activo' ? 'selected' : '' }}>
+                                    Activo - Reside en VITALHOME
+                                </option>
+                                <option value="inactivo" {{ $paciente->estado === 'inactivo' ? 'selected' : '' }}>
+                                    Inactivo
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        {{-- ESPECIFICAR SEGURO --}}
+
+                        <div
+                            class="col-12"
+                            id="editarSeguroContainer"
+                            style="{{ $paciente->tiene_seguro ? '' : 'display:none;' }}"
+                        >
+
+                            <label class="form-label fw-semibold">
+                                ¿A qué seguro pertenece?
+                            </label>
+
+                            <input
+                                type="text"
+                                name="seguro"
+                                id="editar_seguro"
+                                class="form-control"
+                                value="{{ $paciente->seguro }}"
+                                placeholder="Ej. Caja Nacional de Salud"
+                            >
+
+                        </div>
+
+
+                        {{-- MOTIVO INACTIVIDAD --}}
+
+                        <div
+                            class="col-12"
+                            id="editarMotivoContainer"
+                            style="{{ $paciente->estado === 'inactivo' ? '' : 'display:none;' }}"
+                        >
+
+                            <label class="form-label fw-semibold">
+                                Motivo de inactividad
+                            </label>
+
+                            <select
+                                name="motivo_inactividad"
+                                id="editar_motivo_inactividad"
+                                class="form-select"
+                            >
+                                <option value="">Seleccionar</option>
+                                <option value="retiro" {{ $paciente->motivo_inactividad === 'retiro' ? 'selected' : '' }}>
+                                    Ya no reside en VITALHOME
+                                </option>
+                                <option value="fallecimiento" {{ $paciente->motivo_inactividad === 'fallecimiento' ? 'selected' : '' }}>
+                                    Falleció
+                                </option>
+                            </select>
+
+                        </div>
+
+
+                        {{-- ESPECIALIDADES --}}
+
+                        <div class="col-12">
+
+                            <label class="form-label fw-semibold">
+                                Especialidades a las que acude
+                            </label>
+
+                            <textarea
+                                name="especialidades"
+                                rows="2"
+                                class="form-control"
+                                placeholder="Ej. Cardiología, Neurología, Traumatología"
+                            >{{ $paciente->especialidades }}</textarea>
+
+                        </div>
+
+
+                        {{-- MEDICAMENTOS DE INGRESO --}}
+
+                        <div class="col-12">
+
+                            <label class="form-label fw-semibold">
+                                Medicamentos con los que ingresó
+                            </label>
+
+                            <textarea
+                                name="medicamentos_ingreso"
+                                rows="3"
+                                class="form-control"
+                                placeholder="Medicamentos, dosis o indicaciones con las que ingresó el paciente."
+                            >{{ $paciente->medicamentos_ingreso }}</textarea>
+
+                        </div>
+
+
                         {{-- OBSERVACIONES GENERALES --}}
 
                         <div class="col-12">
@@ -2663,6 +2854,48 @@ document.addEventListener('DOMContentLoaded', function () {
         });
 
     });
+
+    const editarTieneSeguro = document.getElementById('editar_tiene_seguro');
+    const editarSeguroContainer = document.getElementById('editarSeguroContainer');
+    const editarSeguro = document.getElementById('editar_seguro');
+
+    const editarEstado = document.getElementById('editar_estado_paciente');
+    const editarMotivoContainer = document.getElementById('editarMotivoContainer');
+    const editarMotivo = document.getElementById('editar_motivo_inactividad');
+
+    function actualizarSeguroEdicion() {
+        const mostrar = editarTieneSeguro && editarTieneSeguro.value === '1';
+
+        if (editarSeguroContainer) {
+            editarSeguroContainer.style.display = mostrar ? '' : 'none';
+        }
+
+        if (editarSeguro) {
+            editarSeguro.required = mostrar;
+        }
+    }
+
+    function actualizarEstadoEdicion() {
+        const mostrar = editarEstado && editarEstado.value === 'inactivo';
+
+        if (editarMotivoContainer) {
+            editarMotivoContainer.style.display = mostrar ? '' : 'none';
+        }
+
+        if (editarMotivo) {
+            editarMotivo.required = mostrar;
+        }
+    }
+
+    if (editarTieneSeguro) {
+        editarTieneSeguro.addEventListener('change', actualizarSeguroEdicion);
+        actualizarSeguroEdicion();
+    }
+
+    if (editarEstado) {
+        editarEstado.addEventListener('change', actualizarEstadoEdicion);
+        actualizarEstadoEdicion();
+    }
 
 });
 
