@@ -6,6 +6,7 @@ use App\Models\Paciente;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 
 class PacienteController extends Controller
 {
@@ -17,43 +18,96 @@ class PacienteController extends Controller
         $buscar = trim($request->query('buscar', ''));
         $estado = $request->query('estado', 'Todos');
 
+        /*
+        |--------------------------------------------------------------------------
+        | Listado optimizado
+        |--------------------------------------------------------------------------
+        |
+        | Antes Eloquent cargaba pacientes, tratamientos y medicamentos mediante
+        | varias consultas. Con una base remota eso multiplica la latencia.
+        |
+        | Aquí usamos una sola consulta con subconsultas agregadas para obtener:
+        | - cantidad de tratamientos activos
+        | - nombres de medicamentos activos
+        |
+        | La vista puede seguir usando $paciente->tratamientos como una colección
+        | sintética, por lo que no necesitamos modificar index.blade.php.
+        |
+        */
+
+        $tratamientosActivos = DB::table('tratamientos as t')
+            ->leftJoin('medicamentos as m', 'm.id', '=', 't.medicamento_id')
+            ->where('t.estado', 'activo')
+            ->groupBy('t.paciente_id')
+            ->selectRaw("
+                t.paciente_id,
+                COUNT(*) AS tratamientos_activos_count,
+                STRING_AGG(
+                    COALESCE(m.nombre, 'Medicamento no disponible'),
+                    '||' ORDER BY m.nombre
+                ) AS medicamentos_activos
+            ");
+
         $query = Paciente::query()
-            ->with([
-                'tratamientos' => function ($query) {
-                    $query
-                        ->where('estado', 'activo')
-                        ->with('medicamento');
-                }
+            ->leftJoinSub($tratamientosActivos, 'ta', function ($join) {
+                $join->on('ta.paciente_id', '=', 'pacientes.id');
+            })
+            ->select([
+                'pacientes.*',
+                DB::raw('COALESCE(ta.tratamientos_activos_count, 0) AS tratamientos_activos_count'),
+                'ta.medicamentos_activos',
             ])
-            ->orderBy('apellido')
-            ->orderBy('nombre');
+            ->orderBy('pacientes.apellido')
+            ->orderBy('pacientes.nombre');
 
         if ($buscar !== '') {
             $query->where(function ($query) use ($buscar) {
-                $query->where('nombre', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('apellido', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('ci', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('observaciones', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('seguro', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('especialidades', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('medicamentos_ingreso', 'ILIKE', "%{$buscar}%");
+                $query->where('pacientes.nombre', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.apellido', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.ci', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.observaciones', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.seguro', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.especialidades', 'ILIKE', "%{$buscar}%")
+                    ->orWhere('pacientes.medicamentos_ingreso', 'ILIKE', "%{$buscar}%");
             });
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | Estado real del paciente
-        |--------------------------------------------------------------------------
-        | Activo   = actualmente reside en VITALHOME.
-        | Inactivo = ya no reside en VITALHOME o falleció.
-        */
         if ($estado === 'Activos') {
-            $query->where('estado', 'activo');
+            $query->where('pacientes.estado', 'activo');
         } elseif ($estado === 'Inactivos') {
-            $query->where('estado', 'inactivo');
+            $query->where('pacientes.estado', 'inactivo');
         }
 
         $pacientes = $query->get();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Compatibilidad con la vista actual
+        |--------------------------------------------------------------------------
+        |
+        | index.blade.php espera una colección "tratamientos" y dentro de cada
+        | tratamiento un objeto "medicamento". Construimos esa información con
+        | los datos de la misma consulta, sin volver a consultar PostgreSQL.
+        |
+        */
+
+        foreach ($pacientes as $paciente) {
+            $nombresMedicamentos = $paciente->medicamentos_activos
+                ? explode('||', $paciente->medicamentos_activos)
+                : [];
+
+            $tratamientos = collect($nombresMedicamentos)->map(function ($nombre) {
+                $tratamiento = new \App\Models\Tratamiento();
+                $medicamento = new \App\Models\Medicamento();
+
+                $medicamento->nombre = $nombre;
+                $tratamiento->setRelation('medicamento', $medicamento);
+
+                return $tratamiento;
+            });
+
+            $paciente->setRelation('tratamientos', $tratamientos);
+        }
 
         return view('pacientes.index', compact(
             'pacientes',
@@ -61,6 +115,7 @@ class PacienteController extends Controller
             'estado'
         ));
     }
+
 
     /**
      * Guardar nuevo paciente.
@@ -134,24 +189,192 @@ class PacienteController extends Controller
      */
     public function show($id)
     {
-        $paciente = Paciente::with([
-            'tratamientos' => function ($query) {
-                $query
-                    ->with('medicamento')
-                    ->orderByDesc('fecha_inicio');
-            },
-            'observaciones' => function ($query) {
-                $query
-                    ->with('usuario')
-                    ->latest();
-            },
-            'signosVitales' => function ($query) {
-                $query->orderByDesc('fecha_registro');
+        /*
+        |--------------------------------------------------------------------------
+        | Perfil optimizado
+        |--------------------------------------------------------------------------
+        |
+        | La versión anterior hacía varias consultas remotas:
+        | paciente + tratamientos + medicamentos + observaciones + usuarios
+        | + signos vitales.
+        |
+        | Para evitar varios viajes a Supabase, agrupamos cada conjunto en JSON
+        | dentro de PostgreSQL y obtenemos todo el perfil en una sola consulta.
+        |
+        */
+
+        $fila = DB::table('pacientes as p')
+            ->where('p.id', $id)
+            ->select([
+                'p.*',
+
+                DB::raw("
+                    COALESCE(
+                        (
+                            SELECT json_agg(
+                                json_build_object(
+                                    'id', t.id,
+                                    'medicamento_id', t.medicamento_id,
+                                    'medicamento_nombre', m.nombre,
+                                    'frecuencia', t.frecuencia,
+                                    'via_administracion', t.via_administracion,
+                                    'fecha_inicio', t.fecha_inicio,
+                                    'dosis', t.dosis,
+                                    'estado', t.estado
+                                )
+                                ORDER BY t.fecha_inicio DESC
+                            )
+                            FROM tratamientos t
+                            LEFT JOIN medicamentos m
+                                ON m.id = t.medicamento_id
+                            WHERE t.paciente_id = p.id
+                        ),
+                        '[]'::json
+                    ) AS tratamientos_json
+                "),
+
+                DB::raw("
+                    COALESCE(
+                        (
+                            SELECT json_agg(
+                                json_build_object(
+                                    'id', po.id,
+                                    'observacion', po.observacion,
+                                    'created_at', po.created_at,
+                                    'updated_at', po.updated_at,
+                                    'usuario_id', po.usuario_id,
+                                    'usuario_nombre', u.nombre,
+                                    'usuario_apellido', u.apellido,
+                                    'usuario_rol', u.rol
+                                )
+                                ORDER BY po.created_at DESC
+                            )
+                            FROM patient_observations po
+                            LEFT JOIN users u
+                                ON u.id = po.usuario_id
+                            WHERE po.paciente_id = p.id
+                        ),
+                        '[]'::json
+                    ) AS observaciones_clinicas_json
+                "),
+
+                DB::raw("
+                    COALESCE(
+                        (
+                            SELECT json_agg(
+                                json_build_object(
+                                    'id', sv.id,
+                                    'fecha_registro', sv.fecha_registro,
+                                    'presion_arterial', sv.presion_arterial,
+                                    'frecuencia_cardiaca', sv.frecuencia_cardiaca,
+                                    'frecuencia_respiratoria', sv.frecuencia_respiratoria,
+                                    'temperatura', sv.temperatura,
+                                    'spo2', sv.spo2
+                                )
+                                ORDER BY sv.fecha_registro DESC
+                            )
+                            FROM signos_vitales sv
+                            WHERE sv.paciente_id = p.id
+                        ),
+                        '[]'::json
+                    ) AS signos_vitales_json
+                "),
+            ])
+            ->first();
+
+        abort_if(!$fila, 404);
+
+        $paciente = (new Paciente())->newFromBuilder((array) $fila);
+
+        /*
+        |--------------------------------------------------------------------------
+        | Hidratar relaciones sin nuevas consultas
+        |--------------------------------------------------------------------------
+        */
+
+        $tratamientosData = json_decode($fila->tratamientos_json ?? '[]', true) ?: [];
+
+        $tratamientos = collect($tratamientosData)->map(function ($data) {
+            $tratamiento = new \App\Models\Tratamiento();
+
+            $tratamiento->forceFill([
+                'id' => $data['id'] ?? null,
+                'medicamento_id' => $data['medicamento_id'] ?? null,
+                'frecuencia' => $data['frecuencia'] ?? null,
+                'via_administracion' => $data['via_administracion'] ?? null,
+                'fecha_inicio' => $data['fecha_inicio'] ?? null,
+                'dosis' => $data['dosis'] ?? null,
+                'estado' => $data['estado'] ?? null,
+            ]);
+
+            $medicamento = new \App\Models\Medicamento();
+            $medicamento->forceFill([
+                'id' => $data['medicamento_id'] ?? null,
+                'nombre' => $data['medicamento_nombre'] ?? null,
+            ]);
+
+            $tratamiento->setRelation('medicamento', $medicamento);
+
+            return $tratamiento;
+        });
+
+        $observacionesData = json_decode($fila->observaciones_clinicas_json ?? '[]', true) ?: [];
+
+        $observacionesClinicas = collect($observacionesData)->map(function ($data) {
+            $observacion = new \App\Models\PatientObservation();
+
+            $observacion->forceFill([
+                'id' => $data['id'] ?? null,
+                'observacion' => $data['observacion'] ?? null,
+                'usuario_id' => $data['usuario_id'] ?? null,
+                'created_at' => $data['created_at'] ?? null,
+                'updated_at' => $data['updated_at'] ?? null,
+            ]);
+
+            if (!empty($data['usuario_id'])) {
+                $usuario = new \App\Models\User();
+
+                $usuario->forceFill([
+                    'id' => $data['usuario_id'],
+                    'nombre' => $data['usuario_nombre'] ?? null,
+                    'apellido' => $data['usuario_apellido'] ?? null,
+                    'rol' => $data['usuario_rol'] ?? null,
+                ]);
+
+                $observacion->setRelation('usuario', $usuario);
+            } else {
+                $observacion->setRelation('usuario', null);
             }
-        ])->findOrFail($id);
+
+            return $observacion;
+        });
+
+        $signosData = json_decode($fila->signos_vitales_json ?? '[]', true) ?: [];
+
+        $signosVitales = collect($signosData)->map(function ($data) {
+            $signo = new \App\Models\SignoVital();
+
+            $signo->forceFill([
+                'id' => $data['id'] ?? null,
+                'fecha_registro' => $data['fecha_registro'] ?? null,
+                'presion_arterial' => $data['presion_arterial'] ?? null,
+                'frecuencia_cardiaca' => $data['frecuencia_cardiaca'] ?? null,
+                'frecuencia_respiratoria' => $data['frecuencia_respiratoria'] ?? null,
+                'temperatura' => $data['temperatura'] ?? null,
+                'spo2' => $data['spo2'] ?? null,
+            ]);
+
+            return $signo;
+        });
+
+        $paciente->setRelation('tratamientos', $tratamientos);
+        $paciente->setRelation('observacionesClinicas', $observacionesClinicas);
+        $paciente->setRelation('observaciones', $observacionesClinicas);
+        $paciente->setRelation('signosVitales', $signosVitales);
 
         return view('pacientes.show', compact('paciente'));
     }
+
 
     /**
      * Actualizar paciente.
@@ -227,8 +450,6 @@ class PacienteController extends Controller
      */
     public function storeObservation(Request $request, int $id)
     {
-        $paciente = Paciente::findOrFail($id);
-
         $validated = $request->validate([
             'observacion' => ['required', 'string', 'max:5000'],
         ], [
@@ -236,23 +457,25 @@ class PacienteController extends Controller
             'observacion.max' => 'La observación no puede superar los 5000 caracteres.',
         ]);
 
-        $paciente->observacionesClinicas()->create([
+        DB::table('patient_observations')->insert([
+            'paciente_id' => $id,
             'usuario_id' => Auth::id(),
             'observacion' => $validated['observacion'],
+            'created_at' => now(),
+            'updated_at' => now(),
         ]);
 
         return redirect()
-            ->route('pacientes.show', ['id' => $paciente->getKey()])
+            ->route('pacientes.show', ['id' => $id])
             ->with('success', 'Observación registrada correctamente.');
     }
+
 
     /**
      * Registrar signos vitales.
      */
     public function storeSignosVitales(Request $request, $id)
     {
-        $paciente = Paciente::findOrFail($id);
-
         $validated = $request->validate([
             'fecha_registro' => ['required', 'date'],
             'presion_arterial' => [
@@ -285,10 +508,21 @@ class PacienteController extends Controller
             'spo2.max' => 'La saturación de oxígeno no puede superar 100%.',
         ]);
 
-        $paciente->signosVitales()->create($validated);
+        DB::table('signos_vitales')->insert([
+            'paciente_id' => $id,
+            'fecha_registro' => $validated['fecha_registro'],
+            'presion_arterial' => $validated['presion_arterial'],
+            'frecuencia_cardiaca' => $validated['frecuencia_cardiaca'],
+            'frecuencia_respiratoria' => $validated['frecuencia_respiratoria'],
+            'temperatura' => $validated['temperatura'],
+            'spo2' => $validated['spo2'],
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
 
         return redirect()
-            ->route('pacientes.show', $paciente->id)
+            ->route('pacientes.show', $id)
             ->with('success', 'Signos vitales registrados correctamente.');
     }
+
 }

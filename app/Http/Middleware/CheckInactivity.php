@@ -37,8 +37,8 @@ class CheckInactivity
         $rememberLogin = $request->session()->get('remember_login', false);
 
         $timeout = $rememberLogin
-            ? 8 * 60
-            : 2 * 60;
+            ? 160 * 60
+            : 20 * 60;
 
         /*
         |--------------------------------------------------------------------------
