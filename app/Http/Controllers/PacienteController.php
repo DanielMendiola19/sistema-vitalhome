@@ -22,17 +22,6 @@ class PacienteController extends Controller
         |--------------------------------------------------------------------------
         | Listado optimizado
         |--------------------------------------------------------------------------
-        |
-        | Antes Eloquent cargaba pacientes, tratamientos y medicamentos mediante
-        | varias consultas. Con una base remota eso multiplica la latencia.
-        |
-        | Aquí usamos una sola consulta con subconsultas agregadas para obtener:
-        | - cantidad de tratamientos activos
-        | - nombres de medicamentos activos
-        |
-        | La vista puede seguir usando $paciente->tratamientos como una colección
-        | sintética, por lo que no necesitamos modificar index.blade.php.
-        |
         */
 
         $tratamientosActivos = DB::table('tratamientos as t')
@@ -84,11 +73,6 @@ class PacienteController extends Controller
         |--------------------------------------------------------------------------
         | Compatibilidad con la vista actual
         |--------------------------------------------------------------------------
-        |
-        | index.blade.php espera una colección "tratamientos" y dentro de cada
-        | tratamiento un objeto "medicamento". Construimos esa información con
-        | los datos de la misma consulta, sin volver a consultar PostgreSQL.
-        |
         */
 
         foreach ($pacientes as $paciente) {
@@ -116,34 +100,90 @@ class PacienteController extends Controller
         ));
     }
 
-
     /**
      * Guardar nuevo paciente.
      */
     public function store(Request $request)
     {
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZAR CI
+        |--------------------------------------------------------------------------
+        |
+        | Algunos residentes no cuentan con carnet de identidad.
+        |
+        | Si el CI:
+        | - está vacío
+        | - contiene solamente ceros, sin importar la cantidad
+        |
+        | se guarda como NULL.
+        |
+        | Los CI reales continúan siendo únicos.
+        |
+        */
+
+        $ci = trim((string) $request->input('ci', ''));
+
+        if ($ci === '' || preg_match('/^0+$/', $ci)) {
+            $request->merge([
+                'ci' => null,
+            ]);
+        } else {
+            $request->merge([
+                'ci' => $ci,
+            ]);
+        }
+
         $validated = $request->validate(
             [
                 'nombre' => ['required', 'string', 'max:100'],
                 'apellido' => ['required', 'string', 'max:100'],
-                'ci' => ['required', 'string', 'max:20', 'unique:pacientes,ci'],
+
+                // Puede ser NULL para pacientes que no tienen CI.
+                // Si existe un CI real, debe seguir siendo único.
+                'ci' => [
+                    'nullable',
+                    'string',
+                    'max:20',
+                    'unique:pacientes,ci',
+                ],
+
                 'fecha_nacimiento' => ['required', 'date'],
                 'sexo' => ['required', 'string', 'max:20'],
                 'telefono' => ['nullable', 'string', 'max:20'],
                 'direccion' => ['nullable', 'string', 'max:200'],
                 'observaciones' => ['nullable', 'string'],
+
                 'tiene_seguro' => ['required', 'boolean'],
+
                 'seguro' => [
                     Rule::requiredIf(fn () => $request->boolean('tiene_seguro')),
                     'nullable',
                     'string',
                     'max:150',
                 ],
-                'especialidades' => ['nullable', 'string', 'max:1000'],
-                'medicamentos_ingreso' => ['nullable', 'string', 'max:5000'],
-                'estado' => ['required', Rule::in(['activo', 'inactivo'])],
+
+                'especialidades' => [
+                    'nullable',
+                    'string',
+                    'max:1000',
+                ],
+
+                'medicamentos_ingreso' => [
+                    'nullable',
+                    'string',
+                    'max:5000',
+                ],
+
+                'estado' => [
+                    'required',
+                    Rule::in(['activo', 'inactivo']),
+                ],
+
                 'motivo_inactividad' => [
-                    Rule::requiredIf(fn () => $request->input('estado') === 'inactivo'),
+                    Rule::requiredIf(
+                        fn () => $request->input('estado') === 'inactivo'
+                    ),
                     'nullable',
                     Rule::in(['retiro', 'fallecimiento']),
                 ],
@@ -151,18 +191,28 @@ class PacienteController extends Controller
             [
                 'nombre.required' => 'El nombre es obligatorio.',
                 'nombre.max' => 'El nombre no puede superar los 100 caracteres.',
+
                 'apellido.required' => 'El apellido es obligatorio.',
                 'apellido.max' => 'El apellido no puede superar los 100 caracteres.',
-                'ci.required' => 'El carnet de identidad es obligatorio.',
+
                 'ci.unique' => 'El carnet de identidad ya está registrado.',
+                'ci.max' => 'El carnet de identidad no puede superar los 20 caracteres.',
+
                 'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
                 'fecha_nacimiento.date' => 'La fecha de nacimiento no es válida.',
+
                 'sexo.required' => 'El sexo es obligatorio.',
+
                 'telefono.max' => 'El teléfono no puede superar los 20 caracteres.',
+
                 'direccion.max' => 'La dirección no puede superar los 200 caracteres.',
+
                 'tiene_seguro.required' => 'Debes indicar si el paciente cuenta con seguro.',
+
                 'seguro.required' => 'Debes especificar el seguro del paciente.',
+
                 'estado.required' => 'El estado del paciente es obligatorio.',
+
                 'motivo_inactividad.required' => 'Debes indicar el motivo de inactividad.',
             ]
         );
@@ -193,14 +243,6 @@ class PacienteController extends Controller
         |--------------------------------------------------------------------------
         | Perfil optimizado
         |--------------------------------------------------------------------------
-        |
-        | La versión anterior hacía varias consultas remotas:
-        | paciente + tratamientos + medicamentos + observaciones + usuarios
-        | + signos vitales.
-        |
-        | Para evitar varios viajes a Supabase, agrupamos cada conjunto en JSON
-        | dentro de PostgreSQL y obtenemos todo el perfil en una sola consulta.
-        |
         */
 
         $fila = DB::table('pacientes as p')
@@ -292,7 +334,10 @@ class PacienteController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        $tratamientosData = json_decode($fila->tratamientos_json ?? '[]', true) ?: [];
+        $tratamientosData = json_decode(
+            $fila->tratamientos_json ?? '[]',
+            true
+        ) ?: [];
 
         $tratamientos = collect($tratamientosData)->map(function ($data) {
             $tratamiento = new \App\Models\Tratamiento();
@@ -308,6 +353,7 @@ class PacienteController extends Controller
             ]);
 
             $medicamento = new \App\Models\Medicamento();
+
             $medicamento->forceFill([
                 'id' => $data['medicamento_id'] ?? null,
                 'nombre' => $data['medicamento_nombre'] ?? null,
@@ -318,7 +364,10 @@ class PacienteController extends Controller
             return $tratamiento;
         });
 
-        $observacionesData = json_decode($fila->observaciones_clinicas_json ?? '[]', true) ?: [];
+        $observacionesData = json_decode(
+            $fila->observaciones_clinicas_json ?? '[]',
+            true
+        ) ?: [];
 
         $observacionesClinicas = collect($observacionesData)->map(function ($data) {
             $observacion = new \App\Models\PatientObservation();
@@ -349,7 +398,10 @@ class PacienteController extends Controller
             return $observacion;
         });
 
-        $signosData = json_decode($fila->signos_vitales_json ?? '[]', true) ?: [];
+        $signosData = json_decode(
+            $fila->signos_vitales_json ?? '[]',
+            true
+        ) ?: [];
 
         $signosVitales = collect($signosData)->map(function ($data) {
             $signo = new \App\Models\SignoVital();
@@ -375,7 +427,6 @@ class PacienteController extends Controller
         return view('pacientes.show', compact('paciente'));
     }
 
-
     /**
      * Actualizar paciente.
      */
@@ -383,33 +434,64 @@ class PacienteController extends Controller
     {
         $paciente = Paciente::findOrFail($id);
 
+        /*
+        |--------------------------------------------------------------------------
+        | NORMALIZAR CI
+        |--------------------------------------------------------------------------
+        */
+
+        $ci = trim((string) $request->input('ci', ''));
+
+        if ($ci === '' || preg_match('/^0+$/', $ci)) {
+            $request->merge([
+                'ci' => null,
+            ]);
+        } else {
+            $request->merge([
+                'ci' => $ci,
+            ]);
+        }
+
         $validated = $request->validate(
             [
                 'nombre' => ['required', 'string', 'max:100'],
                 'apellido' => ['required', 'string', 'max:100'],
+
                 'ci' => [
-                    'required',
+                    'nullable',
                     'string',
                     'max:20',
                     Rule::unique('pacientes', 'ci')->ignore($paciente->id),
                 ],
+
                 'fecha_nacimiento' => ['required', 'date'],
                 'sexo' => ['required', 'string', 'max:20'],
                 'telefono' => ['nullable', 'string', 'max:20'],
                 'direccion' => ['nullable', 'string', 'max:200'],
                 'observaciones' => ['nullable', 'string'],
+
                 'tiene_seguro' => ['required', 'boolean'],
+
                 'seguro' => [
                     Rule::requiredIf(fn () => $request->boolean('tiene_seguro')),
                     'nullable',
                     'string',
                     'max:150',
                 ],
+
                 'especialidades' => ['nullable', 'string', 'max:1000'],
+
                 'medicamentos_ingreso' => ['nullable', 'string', 'max:5000'],
-                'estado' => ['required', Rule::in(['activo', 'inactivo'])],
+
+                'estado' => [
+                    'required',
+                    Rule::in(['activo', 'inactivo']),
+                ],
+
                 'motivo_inactividad' => [
-                    Rule::requiredIf(fn () => $request->input('estado') === 'inactivo'),
+                    Rule::requiredIf(
+                        fn () => $request->input('estado') === 'inactivo'
+                    ),
                     'nullable',
                     Rule::in(['retiro', 'fallecimiento']),
                 ],
@@ -417,13 +499,20 @@ class PacienteController extends Controller
             [
                 'nombre.required' => 'El nombre es obligatorio.',
                 'apellido.required' => 'El apellido es obligatorio.',
-                'ci.required' => 'El carnet de identidad es obligatorio.',
+
                 'ci.unique' => 'El carnet de identidad ya está registrado.',
+                'ci.max' => 'El carnet de identidad no puede superar los 20 caracteres.',
+
                 'fecha_nacimiento.required' => 'La fecha de nacimiento es obligatoria.',
+
                 'sexo.required' => 'El sexo es obligatorio.',
+
                 'tiene_seguro.required' => 'Debes indicar si el paciente cuenta con seguro.',
+
                 'seguro.required' => 'Debes especificar el seguro del paciente.',
+
                 'estado.required' => 'El estado del paciente es obligatorio.',
+
                 'motivo_inactividad.required' => 'Debes indicar el motivo de inactividad.',
             ]
         );
@@ -470,7 +559,6 @@ class PacienteController extends Controller
             ->with('success', 'Observación registrada correctamente.');
     }
 
-
     /**
      * Registrar signos vitales.
      */
@@ -478,30 +566,63 @@ class PacienteController extends Controller
     {
         $validated = $request->validate([
             'fecha_registro' => ['required', 'date'],
+
             'presion_arterial' => [
-                'required', 'string', 'max:20', 'regex:/^\d{2,3}\/\d{2,3}$/',
+                'required',
+                'string',
+                'max:20',
+                'regex:/^\d{2,3}\/\d{2,3}$/',
             ],
-            'frecuencia_cardiaca' => ['required', 'integer', 'min:1', 'max:300'],
-            'frecuencia_respiratoria' => ['required', 'integer', 'min:1', 'max:100'],
-            'temperatura' => ['required', 'numeric', 'min:25', 'max:45'],
-            'spo2' => ['required', 'integer', 'min:0', 'max:100'],
+
+            'frecuencia_cardiaca' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:300',
+            ],
+
+            'frecuencia_respiratoria' => [
+                'required',
+                'integer',
+                'min:1',
+                'max:100',
+            ],
+
+            'temperatura' => [
+                'required',
+                'numeric',
+                'min:25',
+                'max:45',
+            ],
+
+            'spo2' => [
+                'required',
+                'integer',
+                'min:0',
+                'max:100',
+            ],
         ], [
             'fecha_registro.required' => 'La fecha y hora son obligatorias.',
             'fecha_registro.date' => 'La fecha y hora no son válidas.',
+
             'presion_arterial.required' => 'La presión arterial es obligatoria.',
             'presion_arterial.regex' => 'La presión arterial debe tener el formato 130/80.',
+
             'frecuencia_cardiaca.required' => 'La frecuencia cardíaca es obligatoria.',
             'frecuencia_cardiaca.integer' => 'La frecuencia cardíaca debe ser un número.',
             'frecuencia_cardiaca.min' => 'La frecuencia cardíaca no es válida.',
             'frecuencia_cardiaca.max' => 'La frecuencia cardíaca no es válida.',
+
             'frecuencia_respiratoria.required' => 'La frecuencia respiratoria es obligatoria.',
             'frecuencia_respiratoria.integer' => 'La frecuencia respiratoria debe ser un número.',
             'frecuencia_respiratoria.min' => 'La frecuencia respiratoria no es válida.',
             'frecuencia_respiratoria.max' => 'La frecuencia respiratoria no es válida.',
+
             'temperatura.required' => 'La temperatura es obligatoria.',
             'temperatura.numeric' => 'La temperatura debe ser un número.',
             'temperatura.min' => 'La temperatura no es válida.',
             'temperatura.max' => 'La temperatura no es válida.',
+
             'spo2.required' => 'La saturación de oxígeno es obligatoria.',
             'spo2.integer' => 'La saturación de oxígeno debe ser un número.',
             'spo2.min' => 'La saturación de oxígeno no puede ser menor a 0%.',
@@ -524,5 +645,4 @@ class PacienteController extends Controller
             ->route('pacientes.show', $id)
             ->with('success', 'Signos vitales registrados correctamente.');
     }
-
 }
