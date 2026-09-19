@@ -799,39 +799,39 @@
                             Medicamento
                         </label>
 
-                        <select
+                        <input
+                            type="hidden"
                             name="medicamento_id"
-                            class="form-select"
+                            id="medicamento_paciente_id"
+                            value="{{ old('medicamento_id') }}"
                             required
                         >
 
-                            <option value="">
-                                Selecciona un medicamento
-                            </option>
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
+                                <input
+                                    type="text"
+                                    id="buscarMedicamentoPaciente"
+                                    class="form-control"
+                                    placeholder="Buscar por nombre, concentración o presentación..."
+                                    autocomplete="off"
+                                >
+                            </div>
 
-                            @foreach($medicamentos as $medicamento)
+                            <div
+                                id="resultadosMedicamentoPaciente"
+                                class="list-group position-absolute w-100 shadow-sm d-none"
+                                style="z-index:1060; max-height:240px; overflow-y:auto;"
+                            ></div>
+                        </div>
 
-                                <option value="{{ $medicamento->id }}">
-
-                                    {{ $medicamento->nombre }}
-
-                                    @if($medicamento->concentracion)
-
-                                        - {{ $medicamento->concentracion }}
-
-                                    @endif
-
-                                    @if($medicamento->presentacion)
-
-                                        · {{ $medicamento->presentacion }}
-
-                                    @endif
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
+                        <div id="medicamentoPacienteSeleccionado" class="small text-success mt-2 d-none"></div>
+                        <div id="medicamentoPacienteError" class="small text-danger mt-2 d-none">
+                            Selecciona un medicamento de la lista.
+                        </div>
 
                     </div>
 
@@ -948,5 +948,93 @@
 </div>
 
 </div>
+
+@php
+    $medicamentosBusquedaPaciente = $medicamentos->map(function ($medicamento) {
+        return [
+            'id' => $medicamento->id,
+            'nombre' => $medicamento->nombre,
+            'concentracion' => $medicamento->concentracion,
+            'unidad' => $medicamento->unidad_medida,
+            'presentacion' => $medicamento->presentacion,
+        ];
+    })->values();
+@endphp
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('modalRegistrarMedicamentoPaciente');
+    const buscador = document.getElementById('buscarMedicamentoPaciente');
+    const medicamentoId = document.getElementById('medicamento_paciente_id');
+    const resultados = document.getElementById('resultadosMedicamentoPaciente');
+    const seleccionado = document.getElementById('medicamentoPacienteSeleccionado');
+    const error = document.getElementById('medicamentoPacienteError');
+
+    if (!modal || !buscador || !medicamentoId || !resultados) return;
+
+    const medicamentos = @json($medicamentosBusquedaPaciente);
+
+    const etiqueta = (m) => {
+        const dosis = [m.concentracion, m.unidad].filter(Boolean).join(' ');
+        return [m.nombre, dosis, m.presentacion].filter(Boolean).join(' · ');
+    };
+
+    const ocultarResultados = () => {
+        resultados.classList.add('d-none');
+        resultados.innerHTML = '';
+    };
+
+    const mostrarResultados = (termino) => {
+        const q = termino.trim().toLocaleLowerCase('es');
+        if (!q) { ocultarResultados(); return; }
+
+        const coincidencias = medicamentos.filter((m) =>
+            etiqueta(m).toLocaleLowerCase('es').includes(q)
+        ).slice(0, 12);
+
+        resultados.innerHTML = '';
+        if (!coincidencias.length) {
+            resultados.innerHTML = '<div class="list-group-item text-muted small">No se encontraron medicamentos.</div>';
+            resultados.classList.remove('d-none');
+            return;
+        }
+
+        coincidencias.forEach((m) => {
+            const boton = document.createElement('button');
+            boton.type = 'button';
+            boton.className = 'list-group-item list-group-item-action';
+            boton.textContent = etiqueta(m);
+            boton.addEventListener('click', function () {
+                medicamentoId.value = m.id;
+                buscador.value = etiqueta(m);
+                seleccionado.textContent = 'Seleccionado: ' + etiqueta(m);
+                seleccionado.classList.remove('d-none');
+                error.classList.add('d-none');
+                ocultarResultados();
+            });
+            resultados.appendChild(boton);
+        });
+        resultados.classList.remove('d-none');
+    };
+
+    buscador.addEventListener('input', function () {
+        medicamentoId.value = '';
+        seleccionado.classList.add('d-none');
+        mostrarResultados(this.value);
+    });
+
+    modal.querySelector('form').addEventListener('submit', function (event) {
+        if (!medicamentoId.value) {
+            event.preventDefault();
+            error.classList.remove('d-none');
+            buscador.focus();
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!resultados.contains(event.target) && event.target !== buscador) ocultarResultados();
+    });
+});
+</script>
 
 @endsection

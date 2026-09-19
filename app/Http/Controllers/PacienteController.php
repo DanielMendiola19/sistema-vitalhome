@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Http\JsonResponse;
 
 class PacienteController extends Controller
 {
@@ -53,11 +54,8 @@ class PacienteController extends Controller
             $query->where(function ($query) use ($buscar) {
                 $query->where('pacientes.nombre', 'ILIKE', "%{$buscar}%")
                     ->orWhere('pacientes.apellido', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('pacientes.ci', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('pacientes.observaciones', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('pacientes.seguro', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('pacientes.especialidades', 'ILIKE', "%{$buscar}%")
-                    ->orWhere('pacientes.medicamentos_ingreso', 'ILIKE', "%{$buscar}%");
+                    ->orWhereRaw("CONCAT(pacientes.nombre, ' ', pacientes.apellido) ILIKE ?", ["%{$buscar}%"])
+                    ->orWhere('pacientes.ci', 'ILIKE', "%{$buscar}%");
             });
         }
 
@@ -67,7 +65,7 @@ class PacienteController extends Controller
             $query->where('pacientes.estado', 'inactivo');
         }
 
-        $pacientes = $query->get();
+        $pacientes = $query->paginate(10)->withQueryString();
 
         /*
         |--------------------------------------------------------------------------
@@ -235,6 +233,44 @@ class PacienteController extends Controller
     }
 
     /**
+     * Verificar en tiempo real si un CI ya está registrado.
+     */
+    public function verificarCi(Request $request): JsonResponse
+    {
+        $ci = trim((string) $request->query('ci', ''));
+
+        // Vacío o compuesto únicamente por ceros = paciente sin CI.
+        if ($ci === '' || preg_match('/^0+$/', $ci)) {
+            return response()->json([
+                'exists' => false,
+                'normalized_to_null' => true,
+            ]);
+        }
+
+        $exists = Paciente::query()
+            ->where('ci', $ci)
+            ->exists();
+
+        return response()->json([
+            'exists' => $exists,
+            'normalized_to_null' => false,
+        ]);
+    }
+
+    /**
+     * Eliminación lógica del paciente.
+     */
+    public function destroy($id)
+    {
+        $paciente = Paciente::findOrFail($id);
+        $paciente->delete();
+
+        return redirect()
+            ->route('pacientes.index')
+            ->with('success', 'Paciente eliminado correctamente. Su historial se conserva de forma segura.');
+    }
+
+    /**
      * Mostrar detalle del paciente.
      */
     public function show($id)
@@ -247,6 +283,7 @@ class PacienteController extends Controller
 
         $fila = DB::table('pacientes as p')
             ->where('p.id', $id)
+            ->whereNull('p.deleted_at')
             ->select([
                 'p.*',
 

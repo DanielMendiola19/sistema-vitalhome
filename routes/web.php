@@ -257,6 +257,13 @@ Route::middleware([
     )->name('pacientes.index');
 
 
+    // Verificar CI en tiempo real (debe ir antes de /pacientes/{id})
+    Route::get(
+        '/pacientes/verificar-ci',
+        [PacienteController::class, 'verificarCi']
+    )->name('pacientes.verificar-ci');
+
+
     // Ver detalle
     Route::get(
         '/pacientes/{id}',
@@ -293,6 +300,13 @@ Route::middleware([
         '/pacientes/{id}',
         [PacienteController::class, 'update']
     )->name('pacientes.update');
+
+
+    // Eliminación lógica
+    Route::delete(
+        '/pacientes/{id}',
+        [PacienteController::class, 'destroy']
+    )->name('pacientes.destroy');
 
 
     // Agregar observación clínica
@@ -444,6 +458,15 @@ Route::middleware([
             'index'
         ]
     )->name('medicamentos.index');
+
+
+    Route::get(
+        '/medicamentos/verificar-duplicado',
+        [
+            MedicamentoController::class,
+            'verificarDuplicado'
+        ]
+    )->name('medicamentos.verificar-duplicado');
 
 
     Route::get(

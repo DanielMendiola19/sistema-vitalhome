@@ -67,6 +67,7 @@
             <form
                 method="GET"
                 action="{{ route('inventario.pacientes') }}"
+                id="formBuscarPacientesInventario"
             >
 
                 <div class="input-group">
@@ -80,15 +81,20 @@
                         name="buscar"
                         class="form-control"
                         value="{{ $buscar }}"
-                        placeholder="Buscar paciente por nombre o carnet..."
+                        placeholder="Buscar paciente por nombre o CI..."
+                        autocomplete="off"
+                        id="buscarPacientesInventario"
                     >
 
-                    <button
-                        type="submit"
-                        class="btn btn-success"
-                    >
-                        Buscar
-                    </button>
+                    @if($buscar !== '')
+                        <a
+                            href="{{ route('inventario.pacientes') }}"
+                            class="btn btn-outline-secondary"
+                        >
+                            <i class="bi bi-x-lg me-1"></i>
+                            Limpiar
+                        </a>
+                    @endif
 
                 </div>
 
@@ -248,11 +254,62 @@
     </div>
 
 
-    <div class="mt-4">
+    @if($pacientes->total() > 0)
+        <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mt-4">
+            <div class="text-muted small">
+                Mostrando {{ $pacientes->firstItem() }}–{{ $pacientes->lastItem() }}
+                de {{ $pacientes->total() }} pacientes
+            </div>
 
-        {{ $pacientes->links() }}
+            @if($pacientes->hasPages())
+                <nav aria-label="Paginación de pacientes">
+                    <ul class="pagination mb-0">
+                        <li class="page-item {{ $pacientes->onFirstPage() ? 'disabled' : '' }}">
+                            @if($pacientes->onFirstPage())
+                                <span class="page-link"><i class="bi bi-chevron-left"></i></span>
+                            @else
+                                <a class="page-link" href="{{ $pacientes->previousPageUrl() }}" aria-label="Página anterior">
+                                    <i class="bi bi-chevron-left"></i>
+                                </a>
+                            @endif
+                        </li>
 
-    </div>
+                        @foreach($pacientes->getUrlRange(1, $pacientes->lastPage()) as $pagina => $url)
+                            <li class="page-item {{ $pagina === $pacientes->currentPage() ? 'active' : '' }}">
+                                <a class="page-link" href="{{ $url }}">{{ $pagina }}</a>
+                            </li>
+                        @endforeach
+
+                        <li class="page-item {{ $pacientes->hasMorePages() ? '' : 'disabled' }}">
+                            @if($pacientes->hasMorePages())
+                                <a class="page-link" href="{{ $pacientes->nextPageUrl() }}" aria-label="Página siguiente">
+                                    <i class="bi bi-chevron-right"></i>
+                                </a>
+                            @else
+                                <span class="page-link"><i class="bi bi-chevron-right"></i></span>
+                            @endif
+                        </li>
+                    </ul>
+                </nav>
+            @endif
+        </div>
+    @endif
+
+    <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const input = document.getElementById('buscarPacientesInventario');
+                const form = document.getElementById('formBuscarPacientesInventario');
+                if (!input || !form) return;
+
+                let timer = null;
+                input.addEventListener('input', function () {
+                    clearTimeout(timer);
+                    timer = setTimeout(function () {
+                        form.submit();
+                    }, 450);
+                });
+            });
+    </script>
 
 </div>
 

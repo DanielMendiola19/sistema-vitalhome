@@ -43,57 +43,50 @@
 
                     <div class="mb-3">
 
-                        <label
-                            for="medicamento_id"
-                            class="form-label"
-                        >
+                        <label class="form-label fw-semibold">
                             Medicamento *
                         </label>
 
-                        <select
-                            name="medicamento_id"
-                            id="medicamento_id"
-                            class="form-select"
-                            required
-                        >
+                        <div class="position-relative">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white">
+                                    <i class="bi bi-search"></i>
+                                </span>
 
-                            <option value="">
-                                Seleccionar medicamento
-                            </option>
-
-                            @foreach($medicamentos as $medicamento)
-
-                                <option
-                                    value="{{ $medicamento->id }}"
-                                    {{ old('medicamento_id') == $medicamento->id ? 'selected' : '' }}
+                                <input
+                                    type="text"
+                                    id="buscador_medicamento_entrada"
+                                    class="form-control"
+                                    placeholder="Buscar por nombre, concentración o presentación..."
+                                    autocomplete="off"
                                 >
-
-                                    {{ $medicamento->nombre }}
-
-                                    @if($medicamento->concentracion)
-                                        — {{ $medicamento->concentracion }}
-                                    @endif
-
-                                    @if($medicamento->presentacion)
-                                        ({{ $medicamento->presentacion }})
-                                    @endif
-
-                                </option>
-
-                            @endforeach
-
-                        </select>
-
-                        @error('medicamento_id')
-
-                            <div class="text-danger small mt-1">
-                                {{ $message }}
                             </div>
 
+                            <input
+                                type="hidden"
+                                name="medicamento_id"
+                                id="medicamento_id"
+                                value="{{ old('medicamento_id') }}"
+                                required
+                            >
+
+                            <div
+                                id="resultados_medicamento_entrada"
+                                class="list-group position-absolute w-100 shadow-sm d-none"
+                                style="z-index:1060; max-height:260px; overflow-y:auto;"
+                            ></div>
+                        </div>
+
+                        <div id="medicamento_entrada_seleccionado" class="small text-success fw-semibold mt-2 d-none"></div>
+                        <div id="medicamento_entrada_error" class="small text-danger mt-1 d-none">
+                            Selecciona un medicamento de la lista.
+                        </div>
+
+                        @error('medicamento_id')
+                            <div class="text-danger small mt-1">{{ $message }}</div>
                         @enderror
 
                     </div>
-
 
                     <div class="mb-3">
 
@@ -246,3 +239,120 @@
     </div>
 
 </div>
+
+@php
+    $medicamentosEntrada = $medicamentos->map(function ($medicamento) {
+        return [
+            'id' => $medicamento->id,
+            'nombre' => $medicamento->nombre,
+            'concentracion' => $medicamento->concentracion,
+            'unidad' => $medicamento->unidad_medida ?? null,
+            'presentacion' => $medicamento->presentacion,
+        ];
+    })->values()->all();
+@endphp
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const modal = document.getElementById('modalEntrada');
+    const buscador = document.getElementById('buscador_medicamento_entrada');
+    const medicamentoId = document.getElementById('medicamento_id');
+    const resultados = document.getElementById('resultados_medicamento_entrada');
+    const seleccionado = document.getElementById('medicamento_entrada_seleccionado');
+    const error = document.getElementById('medicamento_entrada_error');
+
+    if (!modal || !buscador || !medicamentoId || !resultados) return;
+
+    const medicamentos = @json($medicamentosEntrada);
+
+    const textoMedicamento = (m) => {
+        const concentracion = [m.concentracion, m.unidad].filter(Boolean).join(' ');
+        return [m.nombre, concentracion, m.presentacion].filter(Boolean).join(' · ');
+    };
+
+    const normalizar = (valor) => (valor || '').toString().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+    const ocultarResultados = () => {
+        resultados.classList.add('d-none');
+        resultados.innerHTML = '';
+    };
+
+    const seleccionar = (m) => {
+        const texto = textoMedicamento(m);
+        medicamentoId.value = m.id;
+        buscador.value = texto;
+        seleccionado.textContent = 'Seleccionado: ' + texto;
+        seleccionado.classList.remove('d-none');
+        error.classList.add('d-none');
+        ocultarResultados();
+    };
+
+    const renderizar = () => {
+        const termino = normalizar(buscador.value.trim());
+        medicamentoId.value = '';
+        seleccionado.classList.add('d-none');
+
+        if (!termino) {
+            ocultarResultados();
+            return;
+        }
+
+        const coincidencias = medicamentos.filter((m) =>
+            normalizar(textoMedicamento(m)).includes(termino)
+        ).slice(0, 20);
+
+        resultados.innerHTML = '';
+
+        if (!coincidencias.length) {
+            const vacio = document.createElement('div');
+            vacio.className = 'list-group-item text-muted small';
+            vacio.textContent = 'No se encontraron medicamentos.';
+            resultados.appendChild(vacio);
+        } else {
+            coincidencias.forEach((m) => {
+                const boton = document.createElement('button');
+                boton.type = 'button';
+                boton.className = 'list-group-item list-group-item-action';
+
+                const nombre = document.createElement('div');
+                nombre.className = 'fw-semibold';
+                nombre.textContent = m.nombre;
+
+                const detalle = document.createElement('div');
+                detalle.className = 'small text-muted';
+                detalle.textContent = [
+                    [m.concentracion, m.unidad].filter(Boolean).join(' '),
+                    m.presentacion
+                ].filter(Boolean).join(' · ') || 'Sin detalles adicionales';
+
+                boton.append(nombre, detalle);
+                boton.addEventListener('click', () => seleccionar(m));
+                resultados.appendChild(boton);
+            });
+        }
+
+        resultados.classList.remove('d-none');
+    };
+
+    buscador.addEventListener('input', renderizar);
+    buscador.addEventListener('focus', function () {
+        if (buscador.value.trim() && !medicamentoId.value) renderizar();
+    });
+
+    modal.querySelector('form').addEventListener('submit', function (event) {
+        if (!medicamentoId.value) {
+            event.preventDefault();
+            error.classList.remove('d-none');
+            buscador.focus();
+        }
+    });
+
+    document.addEventListener('click', function (event) {
+        if (!resultados.contains(event.target) && event.target !== buscador) ocultarResultados();
+    });
+
+    const anterior = medicamentos.find((m) => String(m.id) === String(medicamentoId.value));
+    if (anterior) seleccionar(anterior);
+});
+</script>
+

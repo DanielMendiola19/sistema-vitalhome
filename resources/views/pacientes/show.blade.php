@@ -884,7 +884,7 @@
 
                     <p class="patient-header-subtitle">
 
-                        CI: {{ $paciente->ci }}
+                        CI: {{ $paciente->ci ?: 'No registrado' }}
 
                     </p>
 
@@ -963,7 +963,7 @@
                 </div>
 
                 <div class="summary-value">
-                    {{ $paciente->ci }}
+                    {{ $paciente->ci ?: 'No registrado' }}
                 </div>
 
             </div>
@@ -1119,7 +1119,7 @@
                         </span>
 
                         <span class="basic-value">
-                            {{ $paciente->ci }}
+                            {{ $paciente->ci ?: 'No registrado' }}
                         </span>
 
                     </div>
@@ -2514,8 +2514,12 @@
                                 name="ci"
                                 class="form-control"
                                 value="{{ $paciente->ci }}"
-                                required
+                                maxlength="20"
+                                placeholder="Déjalo vacío o usa 0 si aún no tiene CI"
                             >
+                            <small class="text-secondary d-block mt-1">
+                                Vacío o solo ceros se guardará como “sin CI”.
+                            </small>
 
                         </div>
 

@@ -233,15 +233,60 @@
         font-weight: 700;
     }
 
-    .profile-link {
-        color: #059669;
+    .patient-actions {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 7px;
+        width: 112px;
+        min-width: 112px;
+    }
+
+    .patient-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+
+        width: 100%;
+        min-width: 0;
+        height: 36px;
+        padding: 0 10px;
+
+        border-radius: 9px;
+        font-size: 12px;
         font-weight: 700;
+        line-height: 1;
+
         text-decoration: none;
+        border: 1px solid transparent;
+        cursor: pointer;
+        transition: all .2s ease;
         white-space: nowrap;
     }
 
-    .profile-link:hover {
+    .patient-action-view {
+        background: #ecfdf5;
+        border-color: #a7f3d0;
         color: #047857;
+    }
+
+    .patient-action-view:hover {
+        background: #d1fae5;
+        border-color: #6ee7b7;
+        color: #065f46;
+    }
+
+    .patient-action-delete {
+        background: #fff1f2;
+        border-color: #fecdd3;
+        color: #dc2626;
+    }
+
+    .patient-action-delete:hover {
+        background: #ffe4e6;
+        border-color: #fda4af;
+        color: #b91c1c;
     }
 
     .results-info {
@@ -328,6 +373,208 @@
         color: white;
     }
 
+
+    .search-clear {
+        position: absolute;
+        right: 8px;
+        top: 50%;
+        transform: translateY(-50%);
+        border: 0;
+        background: #f1f5f9;
+        color: #64748b;
+        border-radius: 7px;
+        padding: 5px 10px;
+        font-size: 12px;
+        font-weight: 700;
+        cursor: pointer;
+    }
+
+    .search-input.has-clear { padding-right: 86px; }
+
+    .pagination-shell {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-top: 16px;
+        padding: 14px 16px;
+        background: white;
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+    }
+
+    .pagination-info { color: #64748b; font-size: 13px; }
+    .pagination-links { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .page-link-custom {
+        min-width: 36px; height: 36px; padding: 0 10px;
+        display: inline-flex; align-items: center; justify-content: center;
+        border: 1px solid #e2e8f0; border-radius: 8px; background: white;
+        color: #475569; text-decoration: none; font-size: 13px; font-weight: 700;
+    }
+    .page-link-custom:hover { border-color: #10b981; color: #059669; background: #f0fdf4; }
+    .page-link-custom.active { background: #0f172a; border-color: #0f172a; color: white; }
+    .page-link-custom.disabled { opacity: .45; pointer-events: none; }
+
+    .action-group { display: flex; align-items: center; gap: 10px; white-space: nowrap; }
+    .delete-link {
+        border: 0; background: transparent; padding: 0;
+        color: #dc2626; font-size: 13px; font-weight: 700;
+    }
+    .delete-link:hover { color: #991b1b; text-decoration: underline; }
+
+    .field-help { color: #94a3b8; font-size: 11px; margin-top: 5px; }
+    .live-feedback { display: none; font-size: 12px; margin-top: 5px; }
+    .live-feedback.invalid { display: block; color: #dc2626; }
+    .live-feedback.valid { display: block; color: #059669; }
+    .form-control-custom.is-valid { border-color: #10b981; }
+    .form-control-custom.is-invalid { border-color: #dc2626; }
+
+
+
+
+    /* =========================================================
+    MODAL ELIMINAR PACIENTE
+    ========================================================= */
+
+    .delete-modal {
+        border: none;
+        border-radius: 18px;
+        overflow: hidden;
+        box-shadow: 0 24px 60px rgba(15, 23, 42, .20);
+    }
+
+    .delete-modal-body {
+        padding: 30px 26px 24px;
+        text-align: center;
+    }
+
+    .delete-modal-icon {
+        width: 58px;
+        height: 58px;
+        margin: 0 auto 17px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+        background: #fff1f2;
+        color: #dc2626;
+        font-size: 23px;
+    }
+
+    .delete-modal-title {
+        margin: 0 0 10px;
+        color: #0f172a;
+        font-size: 19px;
+        font-weight: 800;
+    }
+
+    .delete-modal-text {
+        margin: 0;
+        color: #64748b;
+        font-size: 14px;
+        line-height: 1.6;
+    }
+
+    .delete-modal-text strong {
+        color: #0f172a;
+    }
+
+    .delete-modal-notice {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+
+        margin-top: 18px;
+        padding: 12px 13px;
+
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+
+        color: #64748b;
+        font-size: 12px;
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    .delete-modal-notice i {
+        color: #0ea5e9;
+        margin-top: 1px;
+    }
+
+    .delete-modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 22px;
+    }
+
+    .delete-modal-actions form {
+        flex: 1;
+        margin: 0;
+    }
+
+    .btn-delete-cancel,
+    .btn-delete-confirm {
+        width: 100%;
+        min-height: 42px;
+
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 7px;
+
+        border-radius: 9px;
+        font-size: 13px;
+        font-weight: 700;
+
+        cursor: pointer;
+        transition: all .2s ease;
+    }
+
+    .btn-delete-cancel {
+        flex: 1;
+        background: white;
+        color: #475569;
+        border: 1px solid #cbd5e1;
+    }
+
+    .btn-delete-cancel:hover {
+        background: #f8fafc;
+        color: #0f172a;
+    }
+
+    .btn-delete-confirm {
+        background: #dc2626;
+        color: white;
+        border: 1px solid #dc2626;
+    }
+
+    .btn-delete-confirm:hover {
+        background: #b91c1c;
+        border-color: #b91c1c;
+    }
+
+    @media (max-width: 575.98px) {
+        #eliminarPacienteModal .modal-dialog {
+            margin: 16px;
+        }
+
+        .delete-modal-body {
+            padding: 25px 18px 20px;
+        }
+
+        .delete-modal-actions {
+            flex-direction: column-reverse;
+        }
+
+        .btn-delete-cancel,
+        .btn-delete-confirm {
+            min-height: 44px;
+        }
+    }
+
     @media (max-width: 768px) {
 
         .patients-page {
@@ -380,15 +627,17 @@
             </p>
         </div>
 
-        <button
-            type="button"
-            class="btn-new-patient"
-            data-bs-toggle="modal"
-            data-bs-target="#nuevoPacienteModal"
-        >
-            <i class="bi bi-plus-lg"></i>
-            Nuevo paciente
-        </button>
+        @if(in_array(auth()->user()->rol, ['administrador', 'doctor', 'enfermero']))
+            <button
+                type="button"
+                class="btn-new-patient"
+                data-bs-toggle="modal"
+                data-bs-target="#nuevoPacienteModal"
+            >
+                <i class="bi bi-plus-lg"></i>
+                Nuevo paciente
+            </button>
+        @endif
 
     </div>
 
@@ -414,6 +663,7 @@
             action="{{ route('pacientes.index') }}"
             method="GET"
             class="search-form"
+            id="patientSearchForm"
         >
 
             @if($estado !== 'Todos')
@@ -433,10 +683,21 @@
                 <input
                     type="text"
                     name="buscar"
+                    id="patientSearchInput"
                     value="{{ $buscar }}"
-                    class="search-input"
-                    placeholder="Buscar por nombre o carnet..."
+                    class="search-input {{ $buscar !== '' ? 'has-clear' : '' }}"
+                    placeholder="Buscar por nombre, apellido o carnet..."
+                    autocomplete="off"
                 >
+
+                <button
+                    type="button"
+                    id="clearPatientSearch"
+                    class="search-clear"
+                    style="{{ $buscar !== '' ? '' : 'display:none;' }}"
+                >
+                    Limpiar
+                </button>
 
             </div>
 
@@ -472,15 +733,12 @@
 
 
     <div class="results-info">
-
-        Mostrando
-
-        <strong>
-            {{ $pacientes->count() }}
-        </strong>
-
-        {{ $pacientes->count() === 1 ? 'paciente' : 'pacientes' }}
-
+        @if($pacientes->total() > 0)
+            Mostrando <strong>{{ $pacientes->firstItem() }}–{{ $pacientes->lastItem() }}</strong>
+            de <strong>{{ $pacientes->total() }}</strong> pacientes
+        @else
+            No hay pacientes para mostrar
+        @endif
     </div>
 
 
@@ -553,7 +811,7 @@
                                     </a>
 
                                     <div class="patient-ci">
-                                        CI: {{ $paciente->ci }}
+                                        CI: {{ $paciente->ci ?: 'No registrado' }}
                                     </div>
 
                                 </td>
@@ -633,14 +891,31 @@
 
                                 {{-- ACCIONES --}}
                                 <td>
+                                    <div class="patient-actions">
 
-                                    <a
-                                        href="{{ route('pacientes.show', $paciente->id) }}"
-                                        class="profile-link"
-                                    >
-                                        Ver perfil →
-                                    </a>
+                                        <a
+                                            href="{{ route('pacientes.show', $paciente->id) }}"
+                                            class="patient-action-btn patient-action-view"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                            Ver perfil
+                                        </a>
 
+                                        @if(in_array(auth()->user()->rol, ['administrador', 'doctor', 'enfermero']))
+                                            <button
+                                                type="button"
+                                                class="patient-action-btn patient-action-delete"
+                                                data-bs-toggle="modal"
+                                                data-bs-target="#eliminarPacienteModal"
+                                                data-paciente-id="{{ $paciente->id }}"
+                                                data-paciente-nombre="{{ $paciente->nombre }} {{ $paciente->apellido }}"
+                                            >
+                                                <i class="bi bi-trash3"></i>
+                                                Eliminar
+                                            </button>
+                                        @endif
+
+                                    </div>
                                 </td>
 
                             </tr>
@@ -675,6 +950,46 @@
 
     </div>
 
+    @if($pacientes->hasPages())
+        <div class="pagination-shell">
+            <div class="pagination-info">
+                Página {{ $pacientes->currentPage() }} de {{ $pacientes->lastPage() }}
+            </div>
+
+            <div class="pagination-links">
+                <a
+                    class="page-link-custom {{ $pacientes->onFirstPage() ? 'disabled' : '' }}"
+                    href="{{ $pacientes->previousPageUrl() ?: '#' }}"
+                    aria-label="Página anterior"
+                >
+                    <i class="bi bi-chevron-left"></i>
+                </a>
+
+                @php
+                    $inicio = max(1, $pacientes->currentPage() - 2);
+                    $fin = min($pacientes->lastPage(), $pacientes->currentPage() + 2);
+                @endphp
+
+                @for($pagina = $inicio; $pagina <= $fin; $pagina++)
+                    <a
+                        class="page-link-custom {{ $pagina === $pacientes->currentPage() ? 'active' : '' }}"
+                        href="{{ $pacientes->url($pagina) }}"
+                    >
+                        {{ $pagina }}
+                    </a>
+                @endfor
+
+                <a
+                    class="page-link-custom {{ $pacientes->hasMorePages() ? '' : 'disabled' }}"
+                    href="{{ $pacientes->nextPageUrl() ?: '#' }}"
+                    aria-label="Página siguiente"
+                >
+                    <i class="bi bi-chevron-right"></i>
+                </a>
+            </div>
+        </div>
+    @endif
+
 </div>
 
 
@@ -697,6 +1012,8 @@
             <form
                 action="{{ route('pacientes.store') }}"
                 method="POST"
+                id="newPatientForm"
+                novalidate
             >
 
                 @csrf
@@ -748,6 +1065,8 @@
                                 name="nombre"
                                 value="{{ old('nombre') }}"
                                 class="form-control form-control-custom @error('nombre') is-invalid @enderror"
+                                maxlength="100"
+                                autocomplete="given-name"
                                 required
                             >
 
@@ -778,6 +1097,8 @@
                                 name="apellido"
                                 value="{{ old('apellido') }}"
                                 class="form-control form-control-custom @error('apellido') is-invalid @enderror"
+                                maxlength="100"
+                                autocomplete="family-name"
                                 required
                             >
 
@@ -808,8 +1129,14 @@
                                 name="ci"
                                 value="{{ old('ci') }}"
                                 class="form-control form-control-custom @error('ci') is-invalid @enderror"
-                                required
+                                maxlength="20"
+                                autocomplete="off"
                             >
+
+                            <div class="field-help">
+                                Si aún no cuenta con carnet, déjalo vacío o escribe uno o más ceros. Se guardará como “sin CI”.
+                            </div>
+                            <div id="ciLiveFeedback" class="live-feedback"></div>
 
                             @error('ci')
 
@@ -838,6 +1165,7 @@
                                 name="fecha_nacimiento"
                                 value="{{ old('fecha_nacimiento') }}"
                                 class="form-control form-control-custom @error('fecha_nacimiento') is-invalid @enderror"
+                                max="{{ now()->format('Y-m-d') }}"
                                 required
                             >
 
@@ -916,6 +1244,8 @@
                                 name="telefono"
                                 value="{{ old('telefono') }}"
                                 class="form-control form-control-custom @error('telefono') is-invalid @enderror"
+                                maxlength="20"
+                                autocomplete="tel"
                             >
 
                             @error('telefono')
@@ -945,6 +1275,7 @@
                                 name="direccion"
                                 value="{{ old('direccion') }}"
                                 class="form-control form-control-custom @error('direccion') is-invalid @enderror"
+                                maxlength="200"
                             >
 
                             @error('direccion')
@@ -1024,6 +1355,7 @@
                                 name="seguro"
                                 value="{{ old('seguro') }}"
                                 class="form-control form-control-custom @error('seguro') is-invalid @enderror"
+                                maxlength="150"
                                 placeholder="Ej. Caja Nacional de Salud"
                             >
 
@@ -1072,6 +1404,7 @@
                                 name="especialidades"
                                 rows="2"
                                 class="form-control form-control-custom @error('especialidades') is-invalid @enderror"
+                                maxlength="1000"
                                 placeholder="Ej. Cardiología, Neurología, Traumatología"
                             >{{ old('especialidades') }}</textarea>
 
@@ -1091,6 +1424,7 @@
                                 name="medicamentos_ingreso"
                                 rows="3"
                                 class="form-control form-control-custom @error('medicamentos_ingreso') is-invalid @enderror"
+                                maxlength="5000"
                                 placeholder="Registra los medicamentos con los que llega el paciente, dosis o indicaciones si corresponde."
                             >{{ old('medicamentos_ingreso') }}</textarea>
 
@@ -1169,40 +1503,25 @@ document.addEventListener('DOMContentLoaded', function () {
     const tieneSeguro = document.getElementById('tiene_seguro');
     const seguroContainer = document.getElementById('seguroDetalleContainer');
     const seguroInput = document.getElementById('seguro');
-
     const estadoPaciente = document.getElementById('estado_paciente');
     const motivoContainer = document.getElementById('motivoInactividadContainer');
     const motivoSelect = document.getElementById('motivo_inactividad');
 
     function actualizarSeguro() {
         const mostrar = tieneSeguro && tieneSeguro.value === '1';
-
-        if (seguroContainer) {
-            seguroContainer.style.display = mostrar ? '' : 'none';
-        }
-
+        if (seguroContainer) seguroContainer.style.display = mostrar ? '' : 'none';
         if (seguroInput) {
             seguroInput.required = mostrar;
-
-            if (!mostrar) {
-                seguroInput.value = '';
-            }
+            if (!mostrar) seguroInput.value = '';
         }
     }
 
     function actualizarEstado() {
         const mostrar = estadoPaciente && estadoPaciente.value === 'inactivo';
-
-        if (motivoContainer) {
-            motivoContainer.style.display = mostrar ? '' : 'none';
-        }
-
+        if (motivoContainer) motivoContainer.style.display = mostrar ? '' : 'none';
         if (motivoSelect) {
             motivoSelect.required = mostrar;
-
-            if (!mostrar) {
-                motivoSelect.value = '';
-            }
+            if (!mostrar) motivoSelect.value = '';
         }
     }
 
@@ -1210,14 +1529,231 @@ document.addEventListener('DOMContentLoaded', function () {
         tieneSeguro.addEventListener('change', actualizarSeguro);
         actualizarSeguro();
     }
-
     if (estadoPaciente) {
         estadoPaciente.addEventListener('change', actualizarEstado);
         actualizarEstado();
     }
+
+    // Búsqueda automática con debounce para no disparar una petición por cada tecla.
+    const searchForm = document.getElementById('patientSearchForm');
+    const searchInput = document.getElementById('patientSearchInput');
+    const clearSearch = document.getElementById('clearPatientSearch');
+    let searchTimer = null;
+
+    if (searchForm && searchInput) {
+        searchInput.addEventListener('input', function () {
+            clearTimeout(searchTimer);
+            const hasValue = this.value.trim() !== '';
+            this.classList.toggle('has-clear', hasValue);
+            if (clearSearch) clearSearch.style.display = hasValue ? '' : 'none';
+            searchTimer = setTimeout(() => searchForm.submit(), 450);
+        });
+    }
+
+    if (clearSearch && searchForm && searchInput) {
+        clearSearch.addEventListener('click', function () {
+            searchInput.value = '';
+            searchInput.classList.remove('has-clear');
+            clearSearch.style.display = 'none';
+            searchForm.submit();
+        });
+    }
+
+    // Validación inmediata del formulario.
+    const patientForm = document.getElementById('newPatientForm');
+    const ciInput = document.getElementById('ci');
+    const ciFeedback = document.getElementById('ciLiveFeedback');
+    let ciTimer = null;
+    let ciDuplicado = false;
+
+    function feedbackFor(input) {
+        let feedback = input.parentElement.querySelector('.live-feedback:not(#ciLiveFeedback)');
+        if (!feedback) {
+            feedback = document.createElement('div');
+            feedback.className = 'live-feedback';
+            input.parentElement.appendChild(feedback);
+        }
+        return feedback;
+    }
+
+    function validarCampo(input) {
+        if (input === ciInput) return;
+        const feedback = feedbackFor(input);
+        input.classList.remove('is-valid', 'is-invalid');
+        feedback.className = 'live-feedback';
+        feedback.textContent = '';
+
+        if (!input.value && !input.required) return;
+        if (input.checkValidity()) {
+            input.classList.add('is-valid');
+        } else {
+            input.classList.add('is-invalid');
+            feedback.classList.add('invalid');
+            feedback.textContent = input.validationMessage;
+        }
+    }
+
+    if (patientForm) {
+        patientForm.querySelectorAll('input, select, textarea').forEach(function (input) {
+            if (input.type === 'hidden') return;
+            input.addEventListener('input', () => validarCampo(input));
+            input.addEventListener('change', () => validarCampo(input));
+            input.addEventListener('blur', () => validarCampo(input));
+        });
+    }
+
+    function mostrarEstadoCi(tipo, mensaje) {
+        if (!ciInput || !ciFeedback) return;
+        ciInput.classList.remove('is-valid', 'is-invalid');
+        ciFeedback.className = 'live-feedback';
+        ciFeedback.textContent = mensaje || '';
+        if (!mensaje) return;
+        if (tipo === 'invalid') {
+            ciInput.classList.add('is-invalid');
+            ciFeedback.classList.add('invalid');
+        } else {
+            ciInput.classList.add('is-valid');
+            ciFeedback.classList.add('valid');
+        }
+    }
+
+    async function verificarCi() {
+        if (!ciInput) return;
+        const ci = ciInput.value.trim();
+        ciDuplicado = false;
+
+        if (ci === '' || /^0+$/.test(ci)) {
+            mostrarEstadoCi('valid', 'Se registrará como paciente sin CI.');
+            return;
+        }
+        if (ci.length > 20) {
+            mostrarEstadoCi('invalid', 'El CI no puede superar los 20 caracteres.');
+            return;
+        }
+
+        mostrarEstadoCi('', '');
+        try {
+            const url = new URL(@json(route('pacientes.verificar-ci')), window.location.origin);
+            url.searchParams.set('ci', ci);
+            const response = await fetch(url, {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            });
+            if (!response.ok) return;
+            const data = await response.json();
+            ciDuplicado = Boolean(data.exists);
+            if (ciDuplicado) {
+                mostrarEstadoCi('invalid', 'Este carnet de identidad ya está registrado.');
+            } else {
+                mostrarEstadoCi('valid', 'Carnet disponible.');
+            }
+        } catch (error) {
+            // La validación del servidor al enviar sigue siendo la autoridad final.
+        }
+    }
+
+    if (ciInput) {
+        ciInput.addEventListener('input', function () {
+            clearTimeout(ciTimer);
+            ciTimer = setTimeout(verificarCi, 350);
+        });
+        ciInput.addEventListener('blur', verificarCi);
+    }
+
+    if (patientForm) {
+        patientForm.addEventListener('submit', async function (event) {
+            event.preventDefault();
+            patientForm.querySelectorAll('input, select, textarea').forEach(validarCampo);
+            await verificarCi();
+
+            if (!patientForm.checkValidity() || ciDuplicado) {
+                const firstInvalid = patientForm.querySelector('.is-invalid, :invalid');
+                if (firstInvalid) firstInvalid.focus();
+                return;
+            }
+
+            patientForm.submit();
+        });
+    }
+
 });
 </script>
 
+
+{{-- ====================================================== --}}
+{{-- MODAL ELIMINAR PACIENTE --}}
+{{-- ====================================================== --}}
+
+<div
+    class="modal fade"
+    id="eliminarPacienteModal"
+    tabindex="-1"
+    aria-labelledby="eliminarPacienteModalLabel"
+    aria-hidden="true"
+>
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content delete-modal">
+
+            <div class="modal-body delete-modal-body">
+
+                <div class="delete-modal-icon">
+                    <i class="bi bi-trash3"></i>
+                </div>
+
+                <h5
+                    class="delete-modal-title"
+                    id="eliminarPacienteModalLabel"
+                >
+                    Eliminar paciente
+                </h5>
+
+                <p class="delete-modal-text">
+                    ¿Estás seguro de que deseas eliminar a
+                    <strong id="nombrePacienteEliminar"></strong>?
+                </p>
+
+                <div class="delete-modal-notice">
+                    <i class="bi bi-info-circle"></i>
+
+                    <span>
+                        El paciente dejará de aparecer en el sistema,
+                        pero su historial quedará conservado.
+                    </span>
+                </div>
+
+                <div class="delete-modal-actions">
+
+                    <button
+                        type="button"
+                        class="btn-delete-cancel"
+                        data-bs-dismiss="modal"
+                    >
+                        Cancelar
+                    </button>
+
+                    <form
+                        id="formEliminarPaciente"
+                        method="POST"
+                        action=""
+                    >
+                        @csrf
+                        @method('DELETE')
+
+                        <button
+                            type="submit"
+                            class="btn-delete-confirm"
+                        >
+                            <i class="bi bi-trash3"></i>
+                            Sí, eliminar
+                        </button>
+                    </form>
+
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
 
 {{-- ====================================================== --}}
 {{-- REABRIR MODAL SI HUBO ERRORES --}}
@@ -1243,5 +1779,46 @@ document.addEventListener('DOMContentLoaded', function () {
 </script>
 
 @endif
+
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+
+    const modalEliminar = document.getElementById('eliminarPacienteModal');
+
+    if (!modalEliminar) {
+        return;
+    }
+
+    modalEliminar.addEventListener('show.bs.modal', function (event) {
+
+        const boton = event.relatedTarget;
+
+        if (!boton) {
+            return;
+        }
+
+        const pacienteId = boton.getAttribute('data-paciente-id');
+        const pacienteNombre = boton.getAttribute('data-paciente-nombre');
+
+        const nombreElement =
+            document.getElementById('nombrePacienteEliminar');
+
+        const formulario =
+            document.getElementById('formEliminarPaciente');
+
+        if (nombreElement) {
+            nombreElement.textContent = pacienteNombre;
+        }
+
+        if (formulario) {
+            formulario.action =
+                "{{ url('/pacientes') }}/" + pacienteId;
+        }
+
+    });
+
+});
+</script>
 
 @endsection
