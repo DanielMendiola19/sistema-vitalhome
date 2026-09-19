@@ -29,7 +29,7 @@ class DashboardController extends Controller
         */
 
         $datos = Cache::remember(
-            'dashboard.resumen',
+            'dashboard.resumen.v2',
             now()->addSeconds(20),
             function () {
 
@@ -55,6 +55,7 @@ class DashboardController extends Controller
                         (
                             SELECT COUNT(*)
                             FROM pacientes
+                            WHERE deleted_at IS NULL
                         ) AS pacientes_activos,
 
                         (
@@ -65,8 +66,11 @@ class DashboardController extends Controller
 
                         (
                             SELECT COUNT(*)
-                            FROM tratamientos
-                            WHERE estado = 'activo'
+                            FROM tratamientos t
+                            INNER JOIN pacientes p
+                                ON p.id = t.paciente_id
+                            WHERE t.estado = 'activo'
+                              AND p.deleted_at IS NULL
                         ) AS tratamientos_activos
                 ");
 
@@ -319,6 +323,28 @@ class DashboardController extends Controller
                         '=',
                         'movimiento_inventarios.usuario_id'
                     )
+
+                    /*
+                    |--------------------------------------------------------------------------
+                    | IGNORAR PACIENTES ELIMINADOS LÓGICAMENTE
+                    |--------------------------------------------------------------------------
+                    |
+                    | Los movimientos generales siguen apareciendo. Si el movimiento
+                    | pertenece a un paciente eliminado, se excluye del Dashboard.
+                    |
+                    */
+
+                    ->where(function ($query) {
+                        $query
+                            ->whereNull('movimiento_inventarios.paciente_id')
+                            ->orWhereNull('pac_directo.deleted_at');
+                    })
+
+                    ->where(function ($query) {
+                        $query
+                            ->whereNull('movimiento_inventarios.inventario_paciente_id')
+                            ->orWhereNull('pac_inventario.deleted_at');
+                    })
 
 
                     /*
